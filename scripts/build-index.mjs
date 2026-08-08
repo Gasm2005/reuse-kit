@@ -75,6 +75,13 @@ ${manifest.stacks
   )
   .join("\n\n")}
 
+## Admin panel
+
+\`admin-panel/<stack>/\` — ${manifest.adminPanel?.note ?? ""}
+
+${header}
+${bySide("admin").map(row).join("\n")}
+
 ## Frontend
 
 ${header}

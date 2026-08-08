@@ -4,7 +4,7 @@ Reusable assets harvested from shipped websites, organised by tech stack, then f
 
 > **Generated file — do not edit by hand.** Edit `assets.json`, then run `node scripts/build-index.mjs`.
 
-**27 assets** · updated 2026-08-08
+**37 assets** · updated 2026-08-08
 
 ## How to use this repo
 
@@ -36,6 +36,20 @@ node -e "const a=require('./assets.json').assets; console.log(a.filter(x=>x.tags
 
 > ⚠️ This is NOT plain Vite + React Router. Anything marked framework 'tanstack-start' will not drop into a plain React app without rewriting the server boundary.
 
+## Admin panel
+
+`admin-panel/<stack>/` — Admin panels live in admin-panel/<stack>/ rather than under stacks/, because an admin panel is lifted as a whole unit — shell, auth guard and CRUD screens together — not asset by asset.
+
+| Asset | Preview | Category | Framework | Reuse | Tests | Tags |
+|---|---|---|---|---|---|---|
+| [Admin shell + route guard + login](admin-panel/tanstack-start-supabase/shell-and-auth) | [👁 see it live](https://artspire-v2.vercel.app/admin/login) | `shell-and-auth` | tanstack-start | 🟡 adapt | — | admin, auth, guard, login |
+| [Media manager (DAM)](admin-panel/tanstack-start-supabase/media-manager) | — | `media-manager` | tanstack-start | 🟡 adapt | — | admin, media, dam, upload |
+| [SEO manager](admin-panel/tanstack-start-supabase/seo-manager) | — | `seo-manager` | tanstack-start | 🟡 adapt | — | admin, seo, meta, title |
+| [Leads CRM](admin-panel/tanstack-start-supabase/crm-leads) | — | `crm-leads` | tanstack-start | 🟡 adapt | — | admin, crm, leads, enquiry |
+| [Blog CMS](admin-panel/tanstack-start-supabase/blog-cms) | [👁 see it live](https://artspire-v2.vercel.app/blog) | `blog-cms` | tanstack-start | 🟢 as-is | — | admin, blog, cms, editor |
+| [Website content CMS](admin-panel/tanstack-start-supabase/content-cms) | — | `content-cms` | tanstack-start | 🟡 adapt | — | admin, cms, content, editable |
+| [Orders, reviews and subscribers admin](admin-panel/tanstack-start-supabase/commerce-admin) | — | `commerce-admin` | tanstack-start | 🟡 adapt | — | admin, orders, fulfilment, reviews |
+
 ## Frontend
 
 | Asset | Preview | Category | Framework | Reuse | Tests | Tags |
@@ -57,6 +71,9 @@ node -e "const a=require('./assets.json').assets; console.log(a.filter(x=>x.tags
 | [Legal page shell + editable website content](stacks/tanstack-start-supabase/frontend/content-pages) | [👁 see it live](https://artspire-v2.vercel.app/privacy-policy) | `content-pages` | react | 🟡 adapt | — | legal, privacy, terms, cms |
 | [Tailwind 4 @theme tokens](stacks/tanstack-start-supabase/frontend/design-tokens) | [👁 see it live](https://artspire-v2.vercel.app/) | `design-tokens` | css | 🔵 reference | — | tailwind, theme, tokens, colors |
 | [SiteChrome — header, nav, footer, reveal engine](stacks/tanstack-start-supabase/frontend/header-navbar) | [👁 see it live](https://artspire-v2.vercel.app/) | `header-navbar` | tanstack-start | 🔵 reference | — | header, navbar, footer, nav |
+| [Sitemap + robots.txt generator](stacks/tanstack-start-supabase/frontend/seo-and-meta) | [👁 see it live](https://artspire-v2.vercel.app/sitemap.xml) | `seo-and-meta` | agnostic | 🟡 adapt | — | seo, sitemap, robots, post-build |
+| [Canonical tags + canonical host redirect](stacks/tanstack-start-supabase/frontend/seo-and-meta) | [👁 see it live](view-source:https://artspire-v2.vercel.app/) | `seo-and-meta` | tanstack-start | 🔵 reference | — | seo, canonical, og, duplicate-content |
+| [AEO — FAQPage structured data](stacks/tanstack-start-supabase/frontend/seo-and-meta) | [👁 see it live](https://artspire-v2.vercel.app/faq) | `seo-and-meta` | react | 🟡 adapt | — | aeo, faq, json-ld, structured-data |
 
 ## Backend
 
