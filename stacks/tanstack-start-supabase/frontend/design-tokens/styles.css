@@ -1,0 +1,401 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@theme {
+  --color-forest: #2d4a35;
+  --color-forest-dark: #1e3326;
+  --color-forest-light: #3d5f45;
+  --color-cream: #faf8f5;
+  --color-cream-dark: #f2ede6;
+  --color-gold: #c9a84c;
+  --color-gold-light: #d4b96a;
+  --color-gold-dark: #b08e3a;
+  --color-charcoal: #1d1c17;
+  --color-charcoal-light: #3a3830;
+  --color-stone: #8c8579;
+  --color-stone-light: #b5aea3;
+  --color-border: #e5e0d8;
+  --color-border-light: #f0ebe3;
+  --color-white: #ffffff;
+
+  --color-primary: #2d4a35;
+  --color-background: #faf8f5;
+  --color-gold-accent: #c9a84c;
+  --color-deep-forest: #2d4a35;
+  --color-on-surface: #1d1c17;
+  --color-on-surface-variant: #5c574d;
+  --color-outline-variant: #e5e0d8;
+  --color-surface-container: #f2ede6;
+  --color-surface-variant: #e7e2db;
+  --color-brand-whatsapp: #25d366;
+
+  --font-display: "EB Garamond", "Cormorant Garamond", serif;
+  --font-body: "Montserrat", sans-serif;
+  --font-accent: "Literata", serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: #1d1c17;
+  background-color: #faf8f5;
+  font-family: "Montserrat", sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.container-main {
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  .container-main {
+    max-width: 640px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 768px) {
+  .container-main {
+    max-width: 1280px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.hero-texture {
+  background-image: radial-gradient(circle at 1px 1px, rgba(45, 74, 53, 0.03) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.hover-lift {
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.06);
+}
+
+.img-zoom {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.img-zoom:hover {
+  transform: scale(1.05);
+}
+
+.active-scale:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+.header-shadow {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+.header-scrolled {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.section-padding {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+@media (min-width: 768px) {
+  .section-padding {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+}
+
+.portfolio-item {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+.portfolio-item.hidden {
+  display: none;
+}
+
+.slider-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  touch-action: pan-y;
+  user-select: none;
+}
+.slider-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.slider-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  border-right: 2px solid #c9a84c;
+  z-index: 5;
+}
+.slider-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background-color: #c9a84c;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  pointer-events: none;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* ============================================================
+   PREMIUM BUTTON ANIMATIONS
+   ============================================================ */
+
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-primary:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(45, 74, 53, 0.4);
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+.btn-primary:hover::after {
+  left: 100%;
+}
+
+.btn-secondary {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-secondary:hover {
+  background-color: #2d4a35;
+  color: #ffffff;
+  border-color: #2d4a35;
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(45, 74, 53, 0.4);
+}
+.btn-secondary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transition: left 0.5s ease;
+}
+.btn-secondary:hover::after {
+  left: 100%;
+}
+
+.btn-whatsapp {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-whatsapp:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+}
+.btn-whatsapp svg {
+  transition: transform 0.3s ease;
+}
+.btn-whatsapp:hover svg {
+  transform: rotate(10deg);
+}
+
+.btn-gold {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-gold:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(201, 168, 76, 0.5);
+}
+.btn-gold::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+.btn-gold:hover::after {
+  left: 100%;
+}
+
+.nav-link {
+  position: relative;
+  transition: color 0.2s ease;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background-color: #2d4a35;
+  transition: width 0.2s ease;
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Category card hover */
+.cat-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cat-card:hover {
+  transform: scale(1.04);
+  filter: brightness(1.1);
+}
+
+/* Work card hover */
+.work-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+}
+.work-card:hover {
+  transform: scale(1.03);
+  border-color: #c9a84c;
+}
+
+/* Process step */
+.process-step-num {
+  position: absolute;
+  font-family: "EB Garamond", serif;
+  font-size: 120px;
+  font-weight: 700;
+  color: rgba(201, 168, 76, 0.12);
+  line-height: 1;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 0;
+}
+.process-divider {
+  position: absolute;
+  right: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(201, 168, 76, 0.3), transparent);
+}
+
+.card-stretch {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ============================================================
+   ARTWORK PAGE TRANSITIONS
+   Premium fade + upward motion. 180ms duration. No scale. No bounce.
+   ============================================================ */
+
+/* Page-level enter — wraps the entire artwork section */
+@keyframes artworkPageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.artwork-page-enter {
+  animation: artworkPageEnter 220ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Content stagger — individual elements enter after page */
+@keyframes artworkContentEnter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.artwork-content-enter {
+  animation: artworkContentEnter 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  /* Default delay 0 — override with inline style={{ animationDelay: 'Xms' }} */
+}
+
+/* Shimmer for blur placeholder */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

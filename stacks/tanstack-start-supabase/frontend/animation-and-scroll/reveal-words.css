@@ -1,0 +1,26 @@
+.tas .word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  line-height: 1;
+}
+.tas .word > span {
+  display: inline-block;
+}
+/* Words hide (slide up) only when JS is active — see reveal note above.
+   Without JS the headings are never split into .word spans, so the text
+   shows normally regardless. */
+html.js .tas .word > span {
+  transform: translateY(110%);
+  transition: transform 0.85s cubic-bezier(0.7, 0, 0.2, 1);
+}
+html.js .tas .reveal-words.in .word > span,
+html.js .tas .reveal-words[data-rv="in"] .word > span {
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js .tas .word > span {
+    transform: none !important;
+    transition: none !important;
+  }
+}

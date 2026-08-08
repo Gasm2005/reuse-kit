@@ -1,0 +1,70 @@
+/* ── Reveal-on-scroll — SAFE BY DESIGN ─────────────────────────────
+   Content is VISIBLE by default. The hidden initial state applies ONLY under
+   html.js, which a blocking <head> script sets (swapping no-js → js) BEFORE
+   first paint — so there is no flash of visible-then-hidden. If JS never runs,
+   is disabled, fails, or the observer misfires, content simply stays visible.
+   Reveal is one-way: SiteChrome adds `.in` and unobserves, and nothing here
+   ever returns a revealed element to opacity 0. prefers-reduced-motion shows
+   everything immediately with no animation. */
+.tas .rv {
+  opacity: 1;
+  transform: none;
+}
+html.js .tas .rv {
+  opacity: 0;
+  transform: translateY(34px);
+  transition:
+    opacity 1s cubic-bezier(0.2, 0.6, 0.2, 1),
+    transform 1s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+/* [data-rv="in"] is the authoritative revealed marker: React rewrites className
+   on re-render and would strip an imperatively-added .in (sending an already
+   revealed element back to opacity 0 — permanently, since the observer has
+   unobserved it). React never manages data-rv, so this survives re-renders. */
+html.js .tas .rv.in,
+html.js .tas .rv[data-rv="in"] {
+  opacity: 1;
+  transform: none;
+}
+html.js .tas .rv.d1 {
+  transition-delay: 0.1s;
+}
+html.js .tas .rv.d2 {
+  transition-delay: 0.2s;
+}
+html.js .tas .rv.d3 {
+  transition-delay: 0.3s;
+}
+html.js .tas .rv.d4 {
+  transition-delay: 0.4s;
+}
+.tas .clip {
+  clip-path: none;
+}
+html.js .tas .clip {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 1.1s cubic-bezier(0.7, 0, 0.2, 1);
+}
+html.js .tas .clip.d1 {
+  transition-delay: 0.12s;
+}
+html.js .tas .clip.d2 {
+  transition-delay: 0.24s;
+}
+html.js .tas .clip.in,
+html.js .tas .clip[data-rv="in"] {
+  clip-path: inset(0 0 0 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js .tas .rv,
+  html.js .tas .rv.in,
+  html.js .tas .rv[data-rv="in"],
+  html.js .tas .clip,
+  html.js .tas .clip.in,
+  html.js .tas .clip[data-rv="in"] {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
+}

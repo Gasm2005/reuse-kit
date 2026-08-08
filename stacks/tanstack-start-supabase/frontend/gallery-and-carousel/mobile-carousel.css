@@ -1,0 +1,55 @@
+/* ── Mobile carousels: CSS-only scroll-snap ──────────────────────
+   No JS, no carousel library. Any grid becomes a swipeable, snapping
+   row under 600px. Works with keyboard and native momentum scroll. */
+/* ============ MOBILE CAROUSELS + POLISH ============ */
+@media (max-width: 600px) {
+  /* Homepage product / category / gift rows → swipeable carousel */
+  .tas .prod-grid,
+  .tas .grid,
+  .tas .grid.g4,
+  .tas .cat-grid,
+  .tas .gift-grid {
+    display: flex;
+    grid-template-columns: none;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 18px 10px;
+    margin: 0 -18px;
+    scrollbar-width: none;
+  }
+  .tas .prod-grid::-webkit-scrollbar,
+  .tas .grid::-webkit-scrollbar,
+  .tas .grid.g4::-webkit-scrollbar,
+  .tas .cat-grid::-webkit-scrollbar,
+  .tas .gift-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .tas .prod-grid > *,
+  .tas .grid > *,
+  .tas .grid.g4 > *,
+  .tas .gift-grid > * {
+    flex: 0 0 66%;
+    scroll-snap-align: start;
+  }
+  .tas .cat-grid > * {
+    flex: 0 0 78%;
+    scroll-snap-align: start;
+  }
+  .tas .editorial {
+    flex: 0 0 90%;
+  }
+  /* keep hero heading from orphaning */
+  .tas .hero h1 {
+    line-height: 1.06;
+  }
+  /* hero images a touch bigger on phone */
+  .tas .hero-art {
+    grid-template-rows: 180px 150px;
+  }
+}
+/* PDP: swipeable main image + dots on mobile */
+.tas .main-img {
+  touch-action: pan-y;
+}

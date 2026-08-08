@@ -1,0 +1,939 @@
+{
+  "version": 1,
+  "updated": "2026-08-08",
+  "purpose": "Reusable assets harvested from shipped websites, organised by tech stack, then frontend/backend, then capability. Files are copied VERBATIM from the source project — never rewritten — so battle-tested code (and its comments and tests) survives intact.",
+  "reuseLegend": {
+    "as-is": "Drop in and change a constant or two. No logic changes.",
+    "adapt": "Logic is sound; table names, buckets or brand values need swapping.",
+    "reference": "Do not copy wholesale. Read it for the pattern, then write the version this project needs."
+  },
+  "frameworkLegend": {
+    "agnostic": "Pure TypeScript. Works in any JS project — React, Next, Vue, Node.",
+    "react": "Needs React. No router or meta-framework coupling.",
+    "tanstack-start": "Uses createServerFn / createFileRoute / TanStack middleware. Needs a rewrite for other frameworks.",
+    "sql": "Postgres / Supabase migration.",
+    "css": "Plain CSS. No build step required."
+  },
+  "stacks": [
+    {
+      "id": "tanstack-start-supabase",
+      "label": "TanStack Start + Vite + React 19 + Tailwind 4 + Supabase",
+      "deployedOn": "Vercel (Nitro preset)",
+      "sourceProjects": [
+        "artspire-v2"
+      ],
+      "caveat": "This is NOT plain Vite + React Router. Anything marked framework 'tanstack-start' will not drop into a plain React app without rewriting the server boundary."
+    }
+  ],
+  "assets": [
+    {
+      "id": "phone-email-validation",
+      "name": "India-first phone + email validation",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "forms-and-validation",
+      "path": "stacks/tanstack-start-supabase/frontend/forms-and-validation",
+      "files": [
+        "lead-validation.ts",
+        "lead-validation.test.ts"
+      ],
+      "framework": "agnostic",
+      "runtime": "both",
+      "deps": [],
+      "tested": true,
+      "tests": 16,
+      "reuse": "as-is",
+      "tags": [
+        "form",
+        "validation",
+        "phone",
+        "email",
+        "india",
+        "checkout",
+        "lead"
+      ],
+      "summary": "validatePhone accepts a plain 10-digit Indian mobile OR an international number with a leading + and 8-15 digits. validateEmail checks shape. Also holds DB CHECK-constraint value lists so UI options and DB constraints cannot drift apart.",
+      "adapt": "BUDGET_RANGES / LEAD_SOURCES / LEAD_STATUSES are Artspire's CHECK values — replace with your own or delete. The validators themselves need no changes.",
+      "whyItMatters": "Written after two real production outages: a form that silently saved nothing for 3+ hours because the UI sent a display label into a CHECK-constrained column, and a paid order permanently locked out of its own page because an 11-digit typo passed a presence-only check.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/contact",
+        "note": "Submit a bad phone/email to see the messages"
+      }
+    },
+    {
+      "id": "shared-lead-form-hook",
+      "name": "Shared lead/contact form submit hook",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "forms-and-validation",
+      "path": "stacks/tanstack-start-supabase/frontend/forms-and-validation",
+      "files": [
+        "use-lead-form.ts"
+      ],
+      "framework": "tanstack-start",
+      "runtime": "browser",
+      "deps": [],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "form",
+        "hook",
+        "idempotency",
+        "upload",
+        "lead"
+      ],
+      "summary": "One submit hook shared by several forms. Generates a UUID per form instance used BOTH as an idempotency key and as the photo upload folder, so a retry after a lost response cannot create a duplicate record.",
+      "adapt": "Calls Artspire's submitContactLead server function — swap for yours. The idempotency-key-as-upload-folder idea is the reusable part.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/contact",
+        "note": "Same form"
+      }
+    },
+    {
+      "id": "toast-wrapper",
+      "name": "Toast wrapper + Sonner provider",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "toast-and-feedback",
+      "path": "stacks/tanstack-start-supabase/frontend/toast-and-feedback",
+      "files": [
+        "toast.ts",
+        "sonner.tsx"
+      ],
+      "framework": "react",
+      "runtime": "browser",
+      "deps": [
+        "sonner"
+      ],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "toast",
+        "notification",
+        "feedback",
+        "sonner",
+        "shadcn"
+      ],
+      "summary": "Thin typed wrapper over Sonner (success/error with title + description) plus the shadcn Sonner provider component.",
+      "adapt": "None needed.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/shop/product/handcrafted-metallic-lamp",
+        "note": "Click Add to Cart"
+      }
+    },
+    {
+      "id": "dependency-free-error-page",
+      "name": "Dependency-free HTML error page",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "toast-and-feedback",
+      "path": "stacks/tanstack-start-supabase/frontend/toast-and-feedback",
+      "files": [
+        "error-page.ts"
+      ],
+      "framework": "agnostic",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "error",
+        "500",
+        "ssr",
+        "fallback"
+      ],
+      "summary": "Returns a complete styled HTML string for a 500 page, with inline CSS and zero imports — so it still renders when the app bundle itself is what failed.",
+      "adapt": "Change the copy and colours.",
+      "preview": {
+        "live": null,
+        "note": "Only renders on a 500 — see previews/index.html"
+      }
+    },
+    {
+      "id": "shadcn-primitives",
+      "name": "shadcn/ui primitives (button, dialog, input, skeleton) + cn",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "ui-primitives",
+      "path": "stacks/tanstack-start-supabase/frontend/ui-primitives",
+      "files": [
+        "button.tsx",
+        "dialog.tsx",
+        "input.tsx",
+        "skeleton.tsx",
+        "utils.ts"
+      ],
+      "framework": "react",
+      "runtime": "browser",
+      "deps": [
+        "@radix-ui/react-dialog",
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "shadcn",
+        "button",
+        "dialog",
+        "modal",
+        "input",
+        "skeleton",
+        "cn"
+      ],
+      "summary": "The only four shadcn components the source project actually used, in new-york style, plus the cn() clsx+tailwind-merge helper.",
+      "adapt": "Prefer `npx shadcn add <name>` for anything else — components.json is in config/.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/track-order",
+        "note": "Inputs and buttons"
+      }
+    },
+    {
+      "id": "image-with-fallback",
+      "name": "ImageWithFallback",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "images-and-media",
+      "path": "stacks/tanstack-start-supabase/frontend/images-and-media",
+      "files": [
+        "ImageWithFallback.tsx"
+      ],
+      "framework": "react",
+      "runtime": "browser",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "image",
+        "fallback",
+        "placeholder",
+        "accessibility",
+        "broken-image"
+      ],
+      "summary": "82 lines. Renders a branded placeholder with role=\"img\" and an aria-label when an image fails to load, instead of a browser broken-image icon.",
+      "adapt": "Change the placeholder glyph and colours.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/shop",
+        "note": "Branded placeholder when an image 404s"
+      }
+    },
+    {
+      "id": "media-library-ui",
+      "name": "Media library picker + multi-image uploader",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "images-and-media",
+      "path": "stacks/tanstack-start-supabase/frontend/images-and-media",
+      "files": [
+        "MediaPicker.tsx",
+        "MultiImageUploader.tsx",
+        "useMediaLibrary.ts",
+        "media-library.ts"
+      ],
+      "framework": "react",
+      "runtime": "browser",
+      "deps": [
+        "@supabase/supabase-js"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "upload",
+        "media",
+        "dam",
+        "picker",
+        "gallery",
+        "admin",
+        "cms"
+      ],
+      "summary": "A complete admin media system: searchable picker modal, multi-file uploader with per-file progress and reordering, plus the data layer (items, variants, usage tracking).",
+      "adapt": "Needs the media_library / media_variants / media_usage_log tables — see backend/database-schema — and the 'media-library' storage bucket.",
+      "preview": {
+        "live": null,
+        "note": "Admin-only, behind login — no public URL"
+      }
+    },
+    {
+      "id": "product-image-gallery",
+      "name": "Product image gallery — sticky thumbs, swipe, dots",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "gallery-and-carousel",
+      "path": "stacks/tanstack-start-supabase/frontend/gallery-and-carousel",
+      "files": [
+        "product-gallery.reference.tsx",
+        "artwork-gallery.reference.tsx",
+        "gallery.css"
+      ],
+      "framework": "react",
+      "runtime": "browser",
+      "deps": [],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "gallery",
+        "image",
+        "thumbnails",
+        "swipe",
+        "touch",
+        "dots",
+        "carousel",
+        "pdp",
+        "lightbox"
+      ],
+      "summary": "Two-column gallery: a sticky vertical thumbnail strip beside a main image, with touch swipe (40px threshold, wraps around), clickable dot indicators on mobile, 3D tilt on hover, and ImageWithFallback on every slot. No carousel library — about 50 lines of JSX and one useState.",
+      "adapt": "The gallery JSX lives INSIDE the route files, which is why they are here whole as .reference.tsx — lift the <div className=\"gallery\"> block plus the idx state and the startX ref. gallery.css is self-contained and includes its dependencies: the .frame aspect-box primitive and .tilt, both of which the gallery markup needs.",
+      "whyItMatters": "There is no separate Gallery component in the source project — it was written inline. These two files are the only copies.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/shop/product/handcrafted-metallic-lamp",
+        "note": "Sticky thumbs + swipe the main image"
+      }
+    },
+    {
+      "id": "css-only-mobile-carousel",
+      "name": "CSS-only swipeable carousel",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "gallery-and-carousel",
+      "path": "stacks/tanstack-start-supabase/frontend/gallery-and-carousel",
+      "files": [
+        "mobile-carousel.css"
+      ],
+      "framework": "css",
+      "runtime": "browser",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "carousel",
+        "slider",
+        "scroll-snap",
+        "mobile",
+        "swipe",
+        "no-js",
+        "grid"
+      ],
+      "summary": "Turns any CSS grid into a snapping, swipeable row under 600px using scroll-snap-type and negative margins for edge-to-edge bleed. Zero JavaScript, zero dependencies, native momentum scrolling, keyboard accessible.",
+      "adapt": "Change the grid class names in the selector list and the breakpoint. Nothing else.",
+      "whyItMatters": "Replaces an entire carousel library. No embla, no swiper, no state, nothing to hydrate.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/",
+        "note": "Narrow the window under 600px — the product row becomes swipeable"
+      }
+    },
+    {
+      "id": "card-hover-effects",
+      "name": "Product card hover — image zoom + quick-view overlay",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "gallery-and-carousel",
+      "path": "stacks/tanstack-start-supabase/frontend/gallery-and-carousel",
+      "files": [
+        "card-hover.css"
+      ],
+      "framework": "css",
+      "runtime": "browser",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "card",
+        "hover",
+        "zoom",
+        "overlay",
+        "quick-view",
+        "product-grid"
+      ],
+      "summary": "Scale-on-hover image zoom inside an overflow-hidden frame, plus a sliding quick-view label.",
+      "adapt": "Rename .card / .imgwrap / .quick to match your markup.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/shop",
+        "note": "Hover any product card"
+      }
+    },
+    {
+      "id": "reveal-on-scroll",
+      "name": "Reveal-on-scroll — safe by design",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "animation-and-scroll",
+      "path": "stacks/tanstack-start-supabase/frontend/animation-and-scroll",
+      "files": [
+        "reveal-on-scroll.css",
+        "reveal-words.css"
+      ],
+      "framework": "css",
+      "runtime": "browser",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "animation",
+        "scroll",
+        "intersection-observer",
+        "reveal",
+        "progressive-enhancement"
+      ],
+      "summary": "Content is VISIBLE by default; the hidden state applies only under html.js, which a blocking head script sets before first paint. If JS never runs, fails, or the observer misfires, content simply stays visible instead of the page going blank.",
+      "adapt": "Pair with a blocking head script that swaps no-js -> js, an IntersectionObserver that sets data-rv=\"in\", and a timeout safety net that reverts to no-js if the app never signals. See header-navbar/SiteChrome.reference.tsx for the observer implementation.",
+      "whyItMatters": "The naive version (hide everything, reveal with JS) blanks the entire site whenever hydration fails. This inverts the default so failure is invisible.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/",
+        "note": "Scroll — sections fade up. Disable JS: content still shows"
+      }
+    },
+    {
+      "id": "smooth-scroll-lenis",
+      "name": "Lenis-aware smooth scroll",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "animation-and-scroll",
+      "path": "stacks/tanstack-start-supabase/frontend/animation-and-scroll",
+      "files": [
+        "smooth-scroll.ts"
+      ],
+      "framework": "agnostic",
+      "runtime": "browser",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "scroll",
+        "lenis",
+        "smooth-scroll",
+        "anchor"
+      ],
+      "summary": "Scrolls THROUGH Lenis rather than calling window.scrollTo, which Lenis overrides.",
+      "whyItMatters": "Without this, scrollIntoView and window.scrollTo silently do nothing on a Lenis page — a confirmation card rendered off-screen and looked like it had vanished.",
+      "preview": {
+        "live": null,
+        "note": "Backend/security asset — nothing to look at, read the code"
+      }
+    },
+    {
+      "id": "multi-provider-analytics",
+      "name": "GTM + GA4 + Meta Pixel + Clarity, env-gated",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "analytics-and-tracking",
+      "path": "stacks/tanstack-start-supabase/frontend/analytics-and-tracking",
+      "files": [
+        "analytics.ts"
+      ],
+      "framework": "agnostic",
+      "runtime": "browser",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "analytics",
+        "gtm",
+        "ga4",
+        "pixel",
+        "clarity",
+        "ecommerce",
+        "tracking"
+      ],
+      "summary": "Every provider loads only when its env var is set, so nothing fires in dev. isTrackablePath excludes /admin. GA4-spec ecommerce events: view_item, add_to_cart, begin_checkout, purchase.",
+      "adapt": "Set VITE_GTM_ID / VITE_GA4_ID / VITE_META_PIXEL_ID / VITE_CLARITY_ID. Watch the exact names — a VITE_GA vs VITE_GA4_ID mismatch silently sends nothing.",
+      "preview": {
+        "live": null,
+        "note": "Backend/security asset — nothing to look at, read the code"
+      }
+    },
+    {
+      "id": "seo-kit",
+      "name": "SEO metadata, JSON-LD builders, DB-driven redirects",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "seo-and-meta",
+      "path": "stacks/tanstack-start-supabase/frontend/seo-and-meta",
+      "files": [
+        "seo.ts",
+        "site.ts",
+        "site.test.ts",
+        "redirects.ts"
+      ],
+      "framework": "agnostic",
+      "runtime": "both",
+      "deps": [],
+      "tested": true,
+      "tests": 4,
+      "reuse": "adapt",
+      "tags": [
+        "seo",
+        "json-ld",
+        "structured-data",
+        "canonical",
+        "redirect",
+        "sitemap",
+        "og"
+      ],
+      "summary": "buildOrganizationStructuredData / buildBreadcrumbStructuredData / buildArtworkStructuredData JSON-LD builders, absoluteUrl + SITE_URL canonical helpers, and findRedirect for DB-driven 301s.",
+      "adapt": "SITE_URL, BRAND and OG_IMAGE are Artspire's. Canonicals must be built from a configured SITE_URL, never window.location.origin.",
+      "preview": {
+        "live": "view-source:https://artspire-v2.vercel.app/",
+        "note": "View source: canonical, og tags, JSON-LD"
+      }
+    },
+    {
+      "id": "legal-and-cms-pages",
+      "name": "Legal page shell + editable website content",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "content-pages",
+      "path": "stacks/tanstack-start-supabase/frontend/content-pages",
+      "files": [
+        "LegalPage.tsx",
+        "website-content.ts",
+        "useWebsiteContent.ts"
+      ],
+      "framework": "react",
+      "runtime": "browser",
+      "deps": [
+        "@supabase/supabase-js"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "legal",
+        "privacy",
+        "terms",
+        "cms",
+        "content",
+        "repeater"
+      ],
+      "summary": "Shared shell for privacy/terms/refund/shipping pages, plus hooks for client-editable page content including repeater fields.",
+      "adapt": "Hooks need the website_content tables — see backend/database-schema.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/privacy-policy",
+        "note": "Also /terms-and-conditions, /shipping-policy, /refund-and-cancellation-policy"
+      }
+    },
+    {
+      "id": "design-tokens",
+      "name": "Tailwind 4 @theme tokens",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "design-tokens",
+      "path": "stacks/tanstack-start-supabase/frontend/design-tokens",
+      "files": [
+        "styles.css"
+      ],
+      "framework": "css",
+      "runtime": "browser",
+      "deps": [
+        "tailwindcss@4"
+      ],
+      "tested": false,
+      "reuse": "reference",
+      "tags": [
+        "tailwind",
+        "theme",
+        "tokens",
+        "colors",
+        "fonts",
+        "container"
+      ],
+      "summary": "Tailwind v4 config lives in an @theme block, not tailwind.config.ts. Includes brand colours, three font families, .container-main responsive container and .no-scrollbar.",
+      "adapt": "Copy the STRUCTURE, replace the values. Note: shadcn's default --background/--foreground HSL theme and dark mode are NOT set up here.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/",
+        "note": "Colours, three font families, container widths in situ"
+      }
+    },
+    {
+      "id": "site-chrome-reference",
+      "name": "SiteChrome — header, nav, footer, reveal engine",
+      "stack": "tanstack-start-supabase",
+      "side": "frontend",
+      "category": "header-navbar",
+      "path": "stacks/tanstack-start-supabase/frontend/header-navbar",
+      "files": [
+        "SiteChrome.reference.tsx"
+      ],
+      "framework": "tanstack-start",
+      "runtime": "browser",
+      "deps": [],
+      "tested": false,
+      "reuse": "reference",
+      "tags": [
+        "header",
+        "navbar",
+        "footer",
+        "nav",
+        "drawer",
+        "cart-badge",
+        "reveal",
+        "announcement-bar"
+      ],
+      "summary": "510 lines holding the announcement bar, header, mobile nav drawer, footer, cart count badge with pulse-on-increase, and the IntersectionObserver reveal engine.",
+      "adapt": "Do NOT copy wholesale — it is one project's chrome in a single file. Read it for four patterns: (1) data-rv=\"in\" as the revealed marker because React rewrites className and wipes an imperatively-added class; (2) a MutationObserver so nodes mounted AFTER the first observe pass still reveal; (3) threshold 0 with an empty dep array; (4) badge pulse driven by comparing against a useRef of the previous count.",
+      "whyItMatters": "Each of those four exists because of a bug that reached production: a service card vanished on tap, a confirmation card mounted invisible, and a cart count changed silently.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/",
+        "note": "Header, announcement bar, mobile drawer, footer, cart badge"
+      }
+    },
+    {
+      "id": "supabase-auth-roles",
+      "name": "Supabase auth + role-based admin",
+      "stack": "tanstack-start-supabase",
+      "side": "backend",
+      "category": "auth-and-roles",
+      "path": "stacks/tanstack-start-supabase/backend/auth-and-roles",
+      "files": [
+        "client.ts",
+        "admin.server.ts",
+        "auth-attacher.ts",
+        "admin.ts",
+        "useAdmin.ts",
+        "20260721_prevent_profile_role_escalation.sql"
+      ],
+      "framework": "tanstack-start",
+      "runtime": "both",
+      "deps": [
+        "@supabase/supabase-js"
+      ],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "auth",
+        "supabase",
+        "rls",
+        "roles",
+        "admin",
+        "service-role",
+        "security"
+      ],
+      "summary": "The complete pattern: browser client, service_role client behind a .server.ts boundary, useAdmin hook, profile/role helpers, and a migration that stops a user escalating their own role.",
+      "adapt": "client.ts and admin.server.ts are as-is. auth-attacher.ts is TanStack middleware — rewrite for other frameworks. The role-escalation migration should go into EVERY project with a roles column.",
+      "whyItMatters": "The service_role key must never reach the browser. The .server.ts suffix plus a server-function boundary is what enforces that; anything VITE_-prefixed is compiled into the client bundle.",
+      "preview": {
+        "live": null,
+        "note": "Backend/security asset — nothing to look at, read the code"
+      }
+    },
+    {
+      "id": "generic-db-schema",
+      "name": "Reusable Postgres schemas (CMS, media, commerce, blog, CRM)",
+      "stack": "tanstack-start-supabase",
+      "side": "backend",
+      "category": "database-schema",
+      "path": "stacks/tanstack-start-supabase/backend/database-schema",
+      "files": [
+        "20250707_phase1_foundation.sql",
+        "20260710_shop_cart_checkout_orders.sql",
+        "20260718_blog_posts.sql",
+        "20260715_newsletter_subscribers.sql",
+        "20260714_product_reviews.sql"
+      ],
+      "framework": "sql",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "schema",
+        "migration",
+        "cms",
+        "media",
+        "ecommerce",
+        "cart",
+        "orders",
+        "blog",
+        "newsletter",
+        "reviews",
+        "crm",
+        "rls"
+      ],
+      "summary": "Generic tables with RLS already written: media_library/media_variants/media_usage_log, website_content + repeaters, pages/page_sections, carts/cart_items/orders/order_items, blog_posts, newsletter_subscribers, product_reviews, and a leads mini-CRM.",
+      "adapt": "phase1_foundation is a large file that also contains Artspire's artwork tables — take the table blocks you need, not the whole file. Drop razorpay_* columns from orders if using another gateway.",
+      "preview": {
+        "live": null,
+        "note": "Backend/security asset — nothing to look at, read the code"
+      }
+    },
+    {
+      "id": "image-upload-compression",
+      "name": "Client-side WebP compression + resilient upload",
+      "stack": "tanstack-start-supabase",
+      "side": "backend",
+      "category": "file-upload-storage",
+      "path": "stacks/tanstack-start-supabase/backend/file-upload-storage",
+      "files": [
+        "commission-photos.ts",
+        "20250707_storage_buckets.sql"
+      ],
+      "framework": "agnostic",
+      "runtime": "browser",
+      "deps": [
+        "browser-image-compression",
+        "@supabase/supabase-js"
+      ],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "upload",
+        "image",
+        "compression",
+        "webp",
+        "heic",
+        "storage",
+        "progress",
+        "retry"
+      ],
+      "summary": "Compresses to WebP in the browser before upload, per-file progress callbacks, size caps (15MB/file, 40MB total), HEIC/HEIF accepted, and isAlreadyExists() so a retry that hits a 409 counts as success instead of failing.",
+      "adapt": "Change BUCKET and the caps. Storage bucket migration shows the public flag / size limit / MIME whitelist setup.",
+      "whyItMatters": "upsert:true looks like the obvious way to make retries safe, but it needs an UPDATE storage policy that anonymous users do not have. Treating a 409 as success is the fix that works with INSERT-only policies.",
+      "preview": {
+        "live": null,
+        "note": "Backend/security asset — nothing to look at, read the code"
+      }
+    },
+    {
+      "id": "payment-security-pattern",
+      "name": "Payment gateway integration — security pattern",
+      "stack": "tanstack-start-supabase",
+      "side": "backend",
+      "category": "payments",
+      "path": "stacks/tanstack-start-supabase/backend/payments",
+      "files": [
+        "razorpay.server.ts",
+        "currency.ts",
+        "currency.test.ts"
+      ],
+      "framework": "tanstack-start",
+      "runtime": "server",
+      "deps": [
+        "razorpay"
+      ],
+      "tested": true,
+      "tests": 6,
+      "reuse": "reference",
+      "tags": [
+        "payment",
+        "razorpay",
+        "webhook",
+        "signature",
+        "idempotent",
+        "security",
+        "currency",
+        "money"
+      ],
+      "summary": "Razorpay-specific, but the five security properties transfer to ANY gateway: (1) recompute the amount server-side from live prices, never trust the client or the stored total; (2) verify the callback signature; (3) fetch the payment from the gateway to confirm amount AND that it belongs to this order — a valid signature only proves some payment happened; (4) idempotent confirmation because webhook and browser callback both fire; (5) a webhook backstop for when the browser never returns. currency.ts (minor units, multi-currency, formatting) is genuinely as-is reusable.",
+      "adapt": "Read razorpay.server.ts before integrating Cashfree, PayPal, Stripe or anything else, and reproduce all five properties. Also note the comment at the top about why Sentry cannot be imported into this file.",
+      "preview": {
+        "live": null,
+        "note": "Backend/security asset — nothing to look at, read the code"
+      }
+    },
+    {
+      "id": "resend-email",
+      "name": "Transactional email via Resend",
+      "stack": "tanstack-start-supabase",
+      "side": "backend",
+      "category": "email",
+      "path": "stacks/tanstack-start-supabase/backend/email",
+      "files": [
+        "email.server.ts"
+      ],
+      "framework": "agnostic",
+      "runtime": "server",
+      "deps": [
+        "resend"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "email",
+        "resend",
+        "transactional",
+        "order-confirmation",
+        "html-email"
+      ],
+      "summary": "Order-confirmation emails to customer and owner, with inline-styled HTML templates. A plain async function, deliberately NOT a server function.",
+      "adapt": "Replace the templates. Keep three things: (1) resend.emails.send() does NOT throw on failure, it resolves with {error} — inspect it or a rejected send looks like success; (2) never fire-and-forget on serverless, the function freezes on response and discards the pending send; (3) do not expose this as a callable endpoint or it becomes an open relay for mail from your domain.",
+      "whyItMatters": "All three of those were real bugs in this file.",
+      "preview": {
+        "live": null,
+        "note": "Backend/security asset — nothing to look at, read the code"
+      }
+    },
+    {
+      "id": "db-rate-limiting",
+      "name": "Serverless-safe rate limiting",
+      "stack": "tanstack-start-supabase",
+      "side": "backend",
+      "category": "rate-limiting",
+      "path": "stacks/tanstack-start-supabase/backend/rate-limiting",
+      "files": [
+        "rate-limit.ts",
+        "rate-limit.test.ts",
+        "20260721_rate_limit_order_lookups.sql"
+      ],
+      "framework": "agnostic",
+      "runtime": "server",
+      "deps": [
+        "@supabase/supabase-js"
+      ],
+      "tested": true,
+      "tests": 6,
+      "reuse": "as-is",
+      "tags": [
+        "rate-limit",
+        "throttle",
+        "security",
+        "brute-force",
+        "serverless",
+        "postgres"
+      ],
+      "summary": "Postgres-backed sliding window (in-memory counters do not survive across serverless invocations). Fails OPEN so a limiter outage never locks real users out.",
+      "adapt": "Apply the migration, then call isWithinRateLimit(client, key, max, windowSeconds).",
+      "whyItMatters": "The tests exist because detaching client.rpc from the Supabase client (const rpc = admin.rpc) throws on every call — supabase-js reads this.rest internally. Combined with fail-open, that silently disabled rate limiting AND broke two public pages. The first test asserts the RPC actually ran, not just that the function returned.",
+      "preview": {
+        "live": null,
+        "note": "Backend/security asset — nothing to look at, read the code"
+      }
+    },
+    {
+      "id": "sentry-kit",
+      "name": "Sentry with PII scrubbing + serverless flush",
+      "stack": "tanstack-start-supabase",
+      "side": "backend",
+      "category": "error-monitoring",
+      "path": "stacks/tanstack-start-supabase/backend/error-monitoring",
+      "files": [
+        "sentry-scrub.ts",
+        "sentry-client.ts",
+        "sentry.server.ts"
+      ],
+      "framework": "agnostic",
+      "runtime": "both",
+      "deps": [
+        "@sentry/react",
+        "@sentry/node"
+      ],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "sentry",
+        "error",
+        "monitoring",
+        "pii",
+        "scrubbing",
+        "privacy",
+        "serverless"
+      ],
+      "summary": "beforeSend scrubbing that strips phone numbers and emails from events, a lazy-loading client init that no-ops without a DSN, and captureServerErrorAndFlush.",
+      "adapt": "Set VITE_SENTRY_DSN. Two traps: (1) a serverless function freezes on response and discards Sentry's buffer, so you must await flush(); (2) @sentry/node named-imports node:diagnostics_channel, so importing it into any module reachable from the client graph breaks the browser build.",
+      "preview": {
+        "live": null,
+        "note": "Backend/security asset — nothing to look at, read the code"
+      }
+    },
+    {
+      "id": "public-record-access",
+      "name": "Verified public access to private records",
+      "stack": "tanstack-start-supabase",
+      "side": "backend",
+      "category": "api-security",
+      "path": "stacks/tanstack-start-supabase/backend/api-security",
+      "files": [
+        "orders-access.server.ts",
+        "20260717_close_order_pii_exposure.sql"
+      ],
+      "framework": "tanstack-start",
+      "runtime": "server",
+      "deps": [
+        "@supabase/supabase-js"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "security",
+        "pii",
+        "rls",
+        "order-lookup",
+        "guest-access",
+        "privacy"
+      ],
+      "summary": "Removes public SELECT entirely, then serves the record through a server function that only returns data after the caller proves ownership (phone match), with rate limiting on top because record numbers are enumerable.",
+      "adapt": "Swap orders for your table. Two rules worth keeping: a leaked or guessed record URL alone must never be enough, and a lookup that CRASHED must never be reported to the user as 'no match' — that hides outages and blames the customer for correct details.",
+      "preview": {
+        "live": null,
+        "note": "Backend/security asset — nothing to look at, read the code"
+      }
+    },
+    {
+      "id": "india-shipping-calculator",
+      "name": "Indian courier shipping calculator",
+      "stack": "tanstack-start-supabase",
+      "side": "backend",
+      "category": "domain-logic",
+      "path": "stacks/tanstack-start-supabase/backend/domain-logic",
+      "files": [
+        "shipping.ts",
+        "shipping.test.ts"
+      ],
+      "framework": "agnostic",
+      "runtime": "both",
+      "deps": [],
+      "tested": true,
+      "tests": 19,
+      "reuse": "adapt",
+      "tags": [
+        "shipping",
+        "courier",
+        "volumetric",
+        "weight",
+        "india",
+        "ecommerce",
+        "checkout"
+      ],
+      "summary": "Volumetric weight (L x B x H / 5000), chargeable weight = max(actual, volumetric), slab-based rates, and text parsers for free-form weight/dimension fields.",
+      "adapt": "The RATES ARE PLACEHOLDERS — replace with a real courier rate card before charging anyone. The formula and slab structure are correct and standard for Indian couriers.",
+      "whyItMatters": "Written as ONE source of truth shared by cart, checkout and the server-side amount re-verification, because three separate shipping calculations had already drifted apart.",
+      "preview": {
+        "live": "https://artspire-v2.vercel.app/checkout",
+        "note": "Add an item, shipping is calculated live"
+      }
+    },
+    {
+      "id": "config-presets",
+      "name": "Config presets (prettier, tsconfig, eslint, vitest, shadcn)",
+      "stack": "tanstack-start-supabase",
+      "side": "config",
+      "category": "config",
+      "path": "stacks/tanstack-start-supabase/config",
+      "files": [
+        "prettierrc.json",
+        "tsconfig.json",
+        "eslint.config.js",
+        "vitest.config.ts",
+        "components.json"
+      ],
+      "framework": "agnostic",
+      "runtime": "both",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "config",
+        "prettier",
+        "tsconfig",
+        "eslint",
+        "vitest",
+        "shadcn",
+        "ci"
+      ],
+      "summary": "Prettier (printWidth 100, double quotes, trailing commas), strict TS with @/* alias, ESLint flat config with tseslint + react-hooks + prettier, vitest config, shadcn components.json.",
+      "adapt": "Rename prettierrc.json back to .prettierrc. eslint.config.js ignores build output including .vercel — without that, linting walks thousands of generated files and reports phantom errors. vite.config.ts is deliberately NOT included: it depends on a proprietary @lovable.dev wrapper and carries tslib workarounds specific to that stack.",
+      "preview": {
+        "live": null,
+        "note": "Backend/security asset — nothing to look at, read the code"
+      }
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+/* ── Frame primitive: aspect-boxed image container with placeholder ──
+   Every gallery/card image sits in a .frame. Copy this FIRST. */
+.tas .frame {
+  position: relative;
+  background: #e6dfce;
+  border: 1px solid #d8cfb9;
+  overflow: hidden;
+}
+.tas .frame::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px dashed rgba(120, 110, 90, 0.55);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+/* Frames holding a real photo: drop the placeholder label + dashed border,
+   and make the image fill the frame. */
+.tas .frame.has-photo::before,
+.tas .frame.has-photo::after {
+  display: none;
+}
+.tas .frame > picture {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+.tas .frame > picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tas .frame::after {
+  content: "\25C8  " attr(data-label);
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+
+/* ── 3D tilt on hover ── */
+.tas .tilt {
+  transition:
+    transform 0.55s cubic-bezier(0.2, 0.6, 0.2, 1),
+    box-shadow 0.55s cubic-bezier(0.2, 0.6, 0.2, 1);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.tas .tilt:hover {
+  box-shadow:
+    0 46px 90px -34px rgba(46, 58, 42, 0.6),
+    0 14px 30px -14px rgba(46, 58, 42, 0.4);
+  z-index: 5;
+}
+.tas .hero-art,
+.tas .prod-grid,
+
+/* ── Product gallery: sticky thumbs column + main image ── */
+.tas .gallery {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 16px;
+  position: sticky;
+  top: 100px;
+}
+.tas .thumbs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tas .thumbs .frame {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: 0.2s;
+}
+.tas .thumbs .frame.active,
+.tas .thumbs .frame:hover {
+  opacity: 1;
+  border-color: var(--gold);
+}
+.tas .main-img {
+  aspect-ratio: 4/4.6;
+  border-radius: 3px;
+
+/* ── Dots indicator (mobile) ── */
+.tas .gdots {
+  display: none;
+}
+@media (max-width: 900px) {
+  .tas .gallery {
+    display: block;
+  }
+  .tas .thumbs {
+    display: none;
+  }
+  .tas .main-img {
+    aspect-ratio: 4/4.4;
+    border-radius: 3px;
+  }
+  .tas .gdots {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 12px;
+  }
+  .tas .gdots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--line);
+    transition: 0.3s;
+  }
+  .tas .gdots span.on {
+    background: var(--gold);
+    width: 20px;
+    border-radius: 4px;
+  }
+}
+

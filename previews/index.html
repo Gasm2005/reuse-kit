@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reuse Kit — visual preview</title>
+    <!--
+      Offline demo of the CSS-only assets. Open this file directly in a browser —
+      no server, no build, no network. The CSS below is loaded from the actual
+      asset files, so what you see here IS what you get when you copy them.
+      Images are inline SVG data URIs so this works with no internet.
+    -->
+    <link rel="stylesheet" href="../stacks/tanstack-start-supabase/frontend/gallery-and-carousel/gallery.css" />
+    <link rel="stylesheet" href="../stacks/tanstack-start-supabase/frontend/gallery-and-carousel/card-hover.css" />
+    <link rel="stylesheet" href="../stacks/tanstack-start-supabase/frontend/gallery-and-carousel/mobile-carousel.css" />
+    <style>
+      :root {
+        --cream: #f4f1ea;
+        --cream-2: #e8e3d6;
+        --forest: #20201c;
+        --gold: #a9884e;
+        --gold-soft: #c6a566;
+        --stone: #847f77;
+        --line: #e0dacd;
+      }
+      body {
+        margin: 0;
+        background: var(--cream);
+        color: var(--forest);
+        font: 15px/1.6 system-ui, -apple-system, sans-serif;
+      }
+      .page { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+      h1 { font-size: 30px; margin: 0 0 6px; }
+      .sub { color: var(--stone); margin: 0 0 40px; }
+      section { margin: 0 0 56px; padding-top: 28px; border-top: 1px solid var(--line); }
+      h2 { font-size: 19px; margin: 0 0 4px; }
+      .meta { color: var(--stone); font-size: 13px; margin: 0 0 18px; }
+      code { background: var(--cream-2); padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+      .demo { background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 24px; }
+      .note { font-size: 13px; color: var(--stone); margin-top: 10px; }
+      /* Minimal stand-ins so the copied CSS has the structure it expects. */
+      .tas .frame { background: var(--cream-2); overflow: hidden; position: relative; }
+      .tas .frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .tas .grid, .tas .prod-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+      .tas .card { text-decoration: none; color: inherit; }
+      .tas .card h3 { font-size: 15px; margin: 8px 0 2px; font-weight: 500; }
+      .tas .card .price { color: var(--gold); font-size: 14px; }
+      .tas .pdp { display: grid; grid-template-columns: 1.15fr 1fr; gap: 40px; }
+      .badge-demo { position: relative; display: inline-block; padding: 8px; }
+      .badge-demo svg { width: 26px; height: 26px; stroke: var(--forest); fill: none; stroke-width: 1.6; }
+      .badge-demo b {
+        position: absolute; top: -2px; right: -4px; background: #c62828; color: #fff;
+        font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; padding: 0 4px;
+        border-radius: 999px; display: grid; place-items: center;
+        box-shadow: 0 0 0 2px #fff; line-height: 1;
+      }
+      .err-frame { width: 100%; height: 280px; border: 1px solid var(--line); border-radius: 4px; }
+      .swatches { display: flex; flex-wrap: wrap; gap: 12px; }
+      .sw { width: 92px; }
+      .sw i { display: block; height: 56px; border-radius: 3px; border: 1px solid rgba(0,0,0,.08); }
+      .sw span { font-size: 11px; color: var(--stone); display: block; margin-top: 5px; }
+    </style>
+  </head>
+  <body class="tas">
+    <div class="page">
+      <h1>Reuse Kit — visual preview</h1>
+      <p class="sub">
+        The CSS-only assets, rendered from the actual files in this repo. Nothing is duplicated here —
+        each section loads the same stylesheet you would copy.
+        For the React assets, use the “see it live” links in the README.
+      </p>
+
+      <section>
+        <h2>Product image gallery</h2>
+        <p class="meta">
+          <code>gallery-and-carousel/gallery.css</code> · sticky thumbnail column + main image, 3D tilt on hover
+        </p>
+        <div class="demo">
+          <div class="pdp">
+            <div class="gallery">
+              <div class="thumbs">
+                <div class="frame active"><img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23c6a566'/%3E%3C/svg%3E" /></div>
+                <div class="frame"><img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23a9884e'/%3E%3C/svg%3E" /></div>
+                <div class="frame"><img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23847f77'/%3E%3C/svg%3E" /></div>
+              </div>
+              <div class="frame main-img tilt"><img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 460'%3E%3Crect width='400' height='460' fill='%23e8e3d6'/%3E%3Ctext x='200' y='240' text-anchor='middle' font-family='sans-serif' font-size='20' fill='%23847f77'%3EMain image%3C/text%3E%3C/svg%3E" /></div>
+            </div>
+            <div>
+              <p class="meta">Hover the main image for the tilt. The thumbs column is <code>position: sticky</code>, so it stays put while the details scroll.</p>
+              <p class="meta">Swipe support and the dot indicators live in the JSX — see <code>product-gallery.reference.tsx</code>.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Card hover — zoom + quick view</h2>
+        <p class="meta"><code>gallery-and-carousel/card-hover.css</code> · hover a card</p>
+        <div class="demo">
+          <div class="grid">
+            <a class="card" href="#"><div class="imgwrap"><div class="frame"><img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 340'%3E%3Crect width='300' height='340' fill='%23c6a566'/%3E%3C/svg%3E" /></div><div class="quick">Quick view</div></div><h3>Handcrafted Lamp</h3><div class="price">₹4,999</div></a>
+            <a class="card" href="#"><div class="imgwrap"><div class="frame"><img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 340'%3E%3Crect width='300' height='340' fill='%23a9884e'/%3E%3C/svg%3E" /></div><div class="quick">Quick view</div></div><h3>Resin Wall Art</h3><div class="price">₹3,499</div></a>
+            <a class="card" href="#"><div class="imgwrap"><div class="frame"><img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 340'%3E%3Crect width='300' height='340' fill='%23847f77'/%3E%3C/svg%3E" /></div><div class="quick">Quick view</div></div><h3>Mirror Mosaic</h3><div class="price">₹6,250</div></a>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>CSS-only mobile carousel</h2>
+        <p class="meta"><code>gallery-and-carousel/mobile-carousel.css</code> · no JS, no library</p>
+        <div class="demo">
+          <p class="note" style="margin-top: 0">
+            <strong>Narrow this window below 600px.</strong> The grid above becomes a swipeable,
+            snapping row with native momentum scrolling — using only <code>scroll-snap-type</code>.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Cart badge — red, ringed, pulses on increase</h2>
+        <p class="meta">from <code>header-navbar/SiteChrome.reference.tsx</code></p>
+        <div class="demo">
+          <div class="badge-demo">
+            <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
+            <b>3</b>
+          </div>
+          <p class="note">
+            Gold on cream read as decoration and shoppers could not tell anything had been added.
+            Red plus a cream ring separates it from the icon underneath.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Dependency-free error page</h2>
+        <p class="meta"><code>toast-and-feedback/error-page.ts</code> · renders when the app bundle itself failed</p>
+        <div class="demo">
+          <iframe class="err-frame" title="Error page preview" srcdoc="<body style='font:15px/1.5 system-ui,sans-serif;background:#fafafa;color:#111;display:grid;place-items:center;min-height:100%;margin:0;padding:1.5rem'><div style='max-width:28rem;text-align:center;padding:2rem'><h1 style='font-size:1.25rem;margin:0 0 .5rem'>This page didn't load</h1><p style='color:#4b5563;margin:0 0 1.5rem'>Something went wrong on our side. Please try again.</p><div style='display:flex;gap:.5rem;justify-content:center'><a href='#' style='padding:.5rem 1rem;border-radius:.375rem;border:1px solid #d1d5db;text-decoration:none;color:#111'>Go home</a><button style='padding:.5rem 1rem;border-radius:.375rem;border:1px solid #d1d5db;background:#fff;cursor:pointer'>Reload</button></div></div></body>"></iframe>
+        </div>
+      </section>
+
+      <section>
+        <h2>Design tokens</h2>
+        <p class="meta"><code>design-tokens/styles.css</code> · Tailwind 4 <code>@theme</code> block, not tailwind.config.ts</p>
+        <div class="demo">
+          <div class="swatches">
+            <div class="sw"><i style="background:#2d4a35"></i><span>forest</span></div>
+            <div class="sw"><i style="background:#faf8f5"></i><span>cream</span></div>
+            <div class="sw"><i style="background:#c9a84c"></i><span>gold</span></div>
+            <div class="sw"><i style="background:#1d1c17"></i><span>charcoal</span></div>
+            <div class="sw"><i style="background:#8c8579"></i><span>stone</span></div>
+            <div class="sw"><i style="background:#e5e0d8"></i><span>border</span></div>
+          </div>
+          <p class="note">
+            Copy the structure, replace the values. Fonts: EB Garamond (display), Montserrat (body),
+            Literata (accent). Note that shadcn's default <code>--background</code>/<code>--foreground</code>
+            HSL theme and dark mode are <strong>not</strong> set up in the source project.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Everything else</h2>
+        <p class="meta">Backend and logic assets have nothing to look at</p>
+        <div class="demo">
+          <p class="note" style="margin-top: 0">
+            Rate limiting, auth roles, upload compression, payment security, Sentry scrubbing, email —
+            these are code, not design. Read them in the repo; each has a README explaining what it does
+            and why it is shaped that way. The README's “see it live” links cover the React components
+            that do have a visible result.
+          </p>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
