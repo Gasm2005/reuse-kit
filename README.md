@@ -4,7 +4,7 @@ Reusable assets harvested from shipped websites, organised by tech stack, then f
 
 > **Generated file — do not edit by hand.** Edit `assets.json`, then run `node scripts/build-index.mjs`.
 
-**67 assets** · updated 2026-08-08 · [proprietary — all rights reserved](LICENSE)
+**90 assets** · updated 2026-08-08 · [proprietary — all rights reserved](LICENSE)
 
 > ⚖️ Author-owned work. No open-source grant. See LICENSE for why that is deliberate.
 
@@ -31,6 +31,7 @@ node -e "const a=require('./assets.json').assets; console.log(a.filter(x=>x.tags
 - `css` — Plain CSS. No build step required.
 - `commonjs` — Plain CommonJS Node module. No framework coupling — lifts into any Node app, Express or not.
 - `ejs` — EJS server-rendered template. Needs Express + EJS, and htmx for the fragments.
+- `nextjs` — Next.js App Router specific — Server Components, route handlers, file conventions. Needs porting for other frameworks.
 
 > **Admin panels** live in `admin-panel/<stack>/` rather than under `stacks/`, because a panel is
 > reused as a whole unit — shell, auth guard and CRUD screens together — not asset by asset.
@@ -154,4 +155,58 @@ node -e "const a=require('./assets.json').assets; console.log(a.filter(x=>x.tags
 | [htmx response header helper](stacks/express-ejs-htmx/backend/htmx-helpers) | — | `htmx-helpers` | commonjs | 🟢 as-is | — | htmx, headers, hx-trigger, toast |
 | [Reviews (with media), Google review sync, marketing, journal](stacks/express-ejs-htmx/backend/reviews-and-marketing) | — | `reviews-and-marketing` | commonjs | 🟡 adapt | — | reviews, ugc, google-reviews, marketing |
 | [Server entry, health doctor, pm2 + Render deploy](stacks/express-ejs-htmx/backend/ops-and-deploy) | — | `ops-and-deploy` | commonjs | 🔵 reference | — | express, server, deploy, pm2 |
+
+
+---
+# Next.js App Router + React + Tailwind 4 + Supabase (@supabase/ssr)
+`stacks/nextjs-supabase/` · Vercel · from beig-estates-app · 23 assets
+> ⚠️ **Portability:** The most portable of the three stacks: Server Components, route handlers and @supabase/ssr are all standard Next.js. Components marked 'react' lift into any React app; the app-shell files and route handlers are App-Router-shaped and need porting to Pages Router or another framework. This is the stack to raid first for hero sections, navbar, footer, gallery and carousel — the other two have little worth taking there.
+>
+> ⚖️ **Licence:** Author-owned. Covered by the repository LICENSE.
+
+### Admin panel
+
+| Asset | Preview | Category | Framework | Reuse | Tests | Tags |
+|---|---|---|---|---|---|---|
+| [Admin shell, login, invite acceptance](admin-panel/nextjs-supabase/shell-and-auth) | [👁 see it live](https://beigestates.vercel.app/admin/login) | `shell-and-auth` | nextjs | 🟡 adapt | — | admin, auth, login, route-group |
+| [Admin dashboard with a real chart](admin-panel/nextjs-supabase/dashboard) | — | `dashboard` | nextjs | 🟡 adapt | — | admin, dashboard, chart, recharts |
+| [Leads CRM — list, detail, manual add, CSV import](admin-panel/nextjs-supabase/leads-crm) | — | `leads-crm` | nextjs | 🟡 adapt | — | admin, crm, leads, pipeline |
+| [Properties admin](admin-panel/nextjs-supabase/properties-admin) | — | `properties-admin` | nextjs | 🟡 adapt | — | admin, properties, listings, crud |
+| [Team management — roster, roles, invites, hierarchy](admin-panel/nextjs-supabase/team-management) | — | `team-management` | nextjs | 🟢 as-is | — | admin, team, users, roles |
+
+
+### Frontend
+
+| Asset | Preview | Category | Framework | Reuse | Tests | Tags |
+|---|---|---|---|---|---|---|
+| [Hero sections — static, search, and showcase](stacks/nextjs-supabase/frontend/hero-sections) | [👁 see it live](https://beigestates.vercel.app) | `hero-sections` | react | 🟡 adapt | — | hero, landing, above-the-fold, search |
+| [Navbar with mobile drawer](stacks/nextjs-supabase/frontend/header-navbar) | [👁 see it live](https://beigestates.vercel.app) | `header-navbar` | react | 🟡 adapt | — | navbar, header, nav, mobile-menu |
+| [Footer](stacks/nextjs-supabase/frontend/footer) | [👁 see it live](https://beigestates.vercel.app) | `footer` | react | 🟡 adapt | — | footer, links, columns, contact |
+| [Image gallery + locality carousel](stacks/nextjs-supabase/frontend/gallery-and-carousel) | [👁 see it live](https://beigestates.vercel.app/listings) | `gallery-and-carousel` | react | 🟡 adapt | — | gallery, lightbox, carousel, slider |
+| [Exit-intent popup + WhatsApp float](stacks/nextjs-supabase/frontend/conversion) | [👁 see it live](https://beigestates.vercel.app) | `conversion` | react | 🟢 as-is | — | popup, exit-intent, modal, lead-capture |
+| [EMI calculator](stacks/nextjs-supabase/frontend/calculators) | [👁 see it live](https://beigestates.vercel.app/listings) | `calculators` | react | 🟢 as-is | — | emi, loan, calculator, finance |
+| [UI primitives — Button, Field, Icons, Skeleton](stacks/nextjs-supabase/frontend/ui-primitives) | [👁 see it live](https://beigestates.vercel.app/contact) | `ui-primitives` | react | 🟢 as-is | — | button, input, field, form-field |
+| [Enquiry, visit-booking and contact forms](stacks/nextjs-supabase/frontend/forms-and-validation) | [👁 see it live](https://beigestates.vercel.app/contact) | `forms-and-validation` | react | 🟡 adapt | — | form, enquiry, lead-capture, booking |
+| [Reveal-on-scroll as a React component](stacks/nextjs-supabase/frontend/animation-and-scroll) | [👁 see it live](https://beigestates.vercel.app) | `animation-and-scroll` | react | 🟢 as-is | — | animation, reveal, scroll, intersection-observer |
+| [Marketing page sections (15 components)](stacks/nextjs-supabase/frontend/marketing-sections) | [👁 see it live](https://beigestates.vercel.app) | `marketing-sections` | react | 🟡 adapt | — | sections, landing-page, features, testimonials |
+| [App Router shell — layout, pages, loading states](stacks/nextjs-supabase/frontend/app-shell) | [👁 see it live](https://beigestates.vercel.app) | `app-shell` | nextjs | 🔵 reference | — | nextjs, app-router, layout, server-component |
+| [Next.js SEO — robots, sitemap, site config](stacks/nextjs-supabase/frontend/seo-and-meta) | [👁 see it live](https://beigestates.vercel.app/sitemap.xml) | `seo-and-meta` | nextjs | 🟢 as-is | — | seo, robots, sitemap, metadata |
+| [Tailwind 4 tokens (globals.css)](stacks/nextjs-supabase/frontend/design-tokens) | [👁 see it live](https://beigestates.vercel.app) | `design-tokens` | css | 🔵 reference | — | tailwind, theme, tokens, colors |
+
+
+### Backend
+
+| Asset | Preview | Category | Framework | Reuse | Tests | Tags |
+|---|---|---|---|---|---|---|
+| [The four Supabase clients for Next.js (@supabase/ssr)](stacks/nextjs-supabase/backend/supabase-clients) | — | `supabase-clients` | nextjs | 🟢 as-is | — | supabase, ssr, auth, session |
+| [Route handlers — leads, CSV import, team invites, visits](stacks/nextjs-supabase/backend/api-routes) | — | `api-routes` | nextjs | 🟡 adapt | — | api, route-handler, rest, leads |
+| [Postgres schema — properties, leads pipeline, team hierarchy, RLS](stacks/nextjs-supabase/backend/database-schema) | — | `database-schema` | sql | 🟡 adapt | — | schema, migration, rls, properties |
+| [Domain logic — pricing, slugs, schema validation, typed models](stacks/nextjs-supabase/backend/domain-logic) | [👁 see it live](https://beigestates.vercel.app/listings) | `domain-logic` | agnostic | 🟡 adapt | — | pricing, lakh, crore, formatting |
+
+
+### Config
+
+| Asset | Preview | Category | Framework | Reuse | Tests | Tags |
+|---|---|---|---|---|---|---|
+| [Next.js config presets](stacks/nextjs-supabase/config) | — | `config` | nextjs | 🟢 as-is | — | config, nextjs, typescript, eslint |
 
