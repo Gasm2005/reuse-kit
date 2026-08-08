@@ -4,7 +4,7 @@ Reusable assets harvested from shipped websites, organised by tech stack, then f
 
 > **Generated file — do not edit by hand.** Edit `assets.json`, then run `node scripts/build-index.mjs`.
 
-**37 assets** · updated 2026-08-08
+**67 assets** · updated 2026-08-08
 
 ## How to use this repo
 
@@ -27,18 +27,18 @@ node -e "const a=require('./assets.json').assets; console.log(a.filter(x=>x.tags
 - `tanstack-start` — Uses createServerFn / createFileRoute / TanStack middleware. Needs a rewrite for other frameworks.
 - `sql` — Postgres / Supabase migration.
 - `css` — Plain CSS. No build step required.
+- `commonjs` — Plain CommonJS Node module. No framework coupling — lifts into any Node app, Express or not.
+- `ejs` — EJS server-rendered template. Needs Express + EJS, and htmx for the fragments.
 
-## Stacks
+> **Admin panels** live in `admin-panel/<stack>/` rather than under `stacks/`, because a panel is
+> reused as a whole unit — shell, auth guard and CRUD screens together — not asset by asset.
 
-### TanStack Start + Vite + React 19 + Tailwind 4 + Supabase
+---
+# TanStack Start + Vite + React 19 + Tailwind 4 + Supabase
+`stacks/tanstack-start-supabase/` · Vercel (Nitro preset) · from artspire-v2 · 37 assets
+> ⚠️ **Portability:** This is NOT plain Vite + React Router. Anything marked framework 'tanstack-start' will not drop into a plain React app without rewriting the server boundary.
 
-`stacks/tanstack-start-supabase/` · deployed on Vercel (Nitro preset) · from artspire-v2
-
-> ⚠️ This is NOT plain Vite + React Router. Anything marked framework 'tanstack-start' will not drop into a plain React app without rewriting the server boundary.
-
-## Admin panel
-
-`admin-panel/<stack>/` — Admin panels live in admin-panel/<stack>/ rather than under stacks/, because an admin panel is lifted as a whole unit — shell, auth guard and CRUD screens together — not asset by asset.
+### Admin panel
 
 | Asset | Preview | Category | Framework | Reuse | Tests | Tags |
 |---|---|---|---|---|---|---|
@@ -50,7 +50,8 @@ node -e "const a=require('./assets.json').assets; console.log(a.filter(x=>x.tags
 | [Website content CMS](admin-panel/tanstack-start-supabase/content-cms) | — | `content-cms` | tanstack-start | 🟡 adapt | — | admin, cms, content, editable |
 | [Orders, reviews and subscribers admin](admin-panel/tanstack-start-supabase/commerce-admin) | — | `commerce-admin` | tanstack-start | 🟡 adapt | — | admin, orders, fulfilment, reviews |
 
-## Frontend
+
+### Frontend
 
 | Asset | Preview | Category | Framework | Reuse | Tests | Tags |
 |---|---|---|---|---|---|---|
@@ -75,7 +76,8 @@ node -e "const a=require('./assets.json').assets; console.log(a.filter(x=>x.tags
 | [Canonical tags + canonical host redirect](stacks/tanstack-start-supabase/frontend/seo-and-meta) | [👁 see it live](view-source:https://artspire-v2.vercel.app/) | `seo-and-meta` | tanstack-start | 🔵 reference | — | seo, canonical, og, duplicate-content |
 | [AEO — FAQPage structured data](stacks/tanstack-start-supabase/frontend/seo-and-meta) | [👁 see it live](https://artspire-v2.vercel.app/faq) | `seo-and-meta` | react | 🟡 adapt | — | aeo, faq, json-ld, structured-data |
 
-## Backend
+
+### Backend
 
 | Asset | Preview | Category | Framework | Reuse | Tests | Tags |
 |---|---|---|---|---|---|---|
@@ -89,8 +91,65 @@ node -e "const a=require('./assets.json').assets; console.log(a.filter(x=>x.tags
 | [Verified public access to private records](stacks/tanstack-start-supabase/backend/api-security) | — | `api-security` | tanstack-start | 🟡 adapt | — | security, pii, rls, order-lookup |
 | [Indian courier shipping calculator](stacks/tanstack-start-supabase/backend/domain-logic) | [👁 see it live](https://artspire-v2.vercel.app/checkout) | `domain-logic` | agnostic | 🟡 adapt | ✅ 19 | shipping, courier, volumetric, weight |
 
-## Config
+
+### Config
 
 | Asset | Preview | Category | Framework | Reuse | Tests | Tags |
 |---|---|---|---|---|---|---|
 | [Config presets (prettier, tsconfig, eslint, vitest, shadcn)](stacks/tanstack-start-supabase/config) | — | `config` | agnostic | 🟢 as-is | — | config, prettier, tsconfig, eslint |
+
+
+---
+# Node + Express + EJS + htmx, JSON file store (no database)
+`stacks/express-ejs-htmx/` · Any Node host (render.yaml + pm2 ecosystem included) · from ethnic-luxe-template · 30 assets
+> ⚠️ **Portability:** Server-rendered EJS with htmx fragments — there is no React here. Views are not portable to a React stack, but the backend modules are plain CommonJS with almost no framework coupling and lift cleanly into any Node app. The JSON store is SINGLE-PROCESS ONLY: under pm2 cluster mode two workers write from stale copies and silently lose orders (server.js refuses to boot in that case).
+>
+> ⚖️ **Licence:** The source repo carries NO LICENSE file. Fine for your own reference; before shipping any of it to a paying client, confirm you own or are licensed for this code.
+
+### Admin panel
+
+| Asset | Preview | Category | Framework | Reuse | Tests | Tags |
+|---|---|---|---|---|---|---|
+| [Admin routes + access gate](admin-panel/express-ejs-htmx/routes) | — | `routes` | commonjs | 🟡 adapt | — | admin, routes, express, gate |
+| [Admin shell, login, lock screens](admin-panel/express-ejs-htmx/shell) | — | `shell` | ejs | 🟡 adapt | — | admin, shell, login, layout |
+| [Admin dashboard + reports](admin-panel/express-ejs-htmx/dashboard-reports) | — | `dashboard-reports` | ejs | 🟡 adapt | — | admin, dashboard, reports, kpi |
+| [Catalog admin — products, variants, stock grid, categories](admin-panel/express-ejs-htmx/catalog) | — | `catalog` | ejs | 🟡 adapt | — | admin, products, catalog, variants |
+| [Orders + returns admin](admin-panel/express-ejs-htmx/orders) | — | `orders` | ejs | 🟡 adapt | — | admin, orders, fulfilment, returns |
+| [Discounts, marketing audit, journal admin](admin-panel/express-ejs-htmx/marketing) | — | `marketing` | ejs | 🟡 adapt | — | admin, discounts, coupons, marketing |
+| [Settings, customers, activity log, import/export admin](admin-panel/express-ejs-htmx/settings) | — | `settings` | ejs | 🟡 adapt | — | admin, settings, customers, activity-log |
+| [Licence + plan admin](admin-panel/express-ejs-htmx/licensing) | — | `licensing` | ejs | 🟡 adapt | — | admin, licence, plan, upgrade |
+| [Admin CSS + JS](admin-panel/express-ejs-htmx/styles-and-scripts) | — | `styles-and-scripts` | css | 🟢 as-is | — | admin, css, styles, javascript |
+| [Review moderation admin](admin-panel/express-ejs-htmx/reviews) | — | `reviews` | ejs | 🟡 adapt | — | admin, reviews, moderation, ugc |
+
+
+### Frontend
+
+| Asset | Preview | Category | Framework | Reuse | Tests | Tags |
+|---|---|---|---|---|---|---|
+| [Storefront pages (EJS)](stacks/express-ejs-htmx/frontend/storefront-pages) | — | `storefront-pages` | ejs | 🟡 adapt | — | storefront, ejs, home, listing |
+| [Layout partials — header, footer, drawer, filters, product card](stacks/express-ejs-htmx/frontend/layout-partials) | — | `layout-partials` | ejs | 🟡 adapt | — | header, navbar, footer, drawer |
+| [htmx fragments — the interactivity layer](stacks/express-ejs-htmx/frontend/htmx-fragments) | — | `htmx-fragments` | ejs | 🔵 reference | — | htmx, fragments, cart-drawer, quick-view |
+| [Transactional email templates](stacks/express-ejs-htmx/frontend/email-templates) | — | `email-templates` | ejs | 🟢 as-is | — | email, transactional, order-confirmation, order-status |
+| [Storefront CSS + JS](stacks/express-ejs-htmx/frontend/styles-and-scripts) | — | `styles-and-scripts` | css | 🔵 reference | — | css, styles, javascript, htmx-config |
+
+
+### Backend
+
+| Asset | Preview | Category | Framework | Reuse | Tests | Tags |
+|---|---|---|---|---|---|---|
+| [GST tax invoices + GSTIN validation + GSTR-1 working papers](stacks/express-ejs-htmx/backend/india-gst) | — | `india-gst` | commonjs | 🟢 as-is | — | gst, gstin, invoice, tax |
+| [Pincode lookup, COD rules, delivery zones](stacks/express-ejs-htmx/backend/india-logistics) | — | `india-logistics` | commonjs | 🟢 as-is | — | pincode, cod, delivery, shipping |
+| [Dependency-free admin auth (scrypt + signed cookie)](stacks/express-ejs-htmx/backend/auth-and-sessions) | — | `auth-and-sessions` | commonjs | 🟢 as-is | — | auth, login, session, scrypt |
+| [Atomic JSON file store with backups](stacks/express-ejs-htmx/backend/data-store) | — | `data-store` | commonjs | 🟡 adapt | — | database, json, store, persistence |
+| [Commerce core — cart, orders, variants, pricing, discounts, returns](stacks/express-ejs-htmx/backend/commerce-core) | — | `commerce-core` | commonjs | 🟡 adapt | — | cart, orders, products, catalog |
+| [Payment gateway adapter layer](stacks/express-ejs-htmx/backend/payments) | — | `payments` | commonjs | 🟢 as-is | — | payments, razorpay, adapter, gateway |
+| [Notification adapter — SMTP / Resend / WhatsApp](stacks/express-ejs-htmx/backend/notifications) | — | `notifications` | commonjs | 🟢 as-is | — | email, smtp, resend, whatsapp |
+| [Image + video compression pipeline](stacks/express-ejs-htmx/backend/media-pipeline) | — | `media-pipeline` | commonjs | 🟢 as-is | — | upload, image, video, compression |
+| [Commerce analytics, UTM attribution, audience switch](stacks/express-ejs-htmx/backend/analytics) | — | `analytics` | commonjs | 🟡 adapt | — | analytics, dashboard, kpi, revenue |
+| [Offline-verifiable licence keys + one-command provisioning](stacks/express-ejs-htmx/backend/licensing-saas) | — | `licensing-saas` | commonjs | 🟢 as-is | — | licensing, saas, ed25519, signing |
+| [Catalog import/export](stacks/express-ejs-htmx/backend/import-export) | — | `import-export` | commonjs | 🟡 adapt | — | import, export, csv, catalog |
+| [Theme contract + config-driven theming](stacks/express-ejs-htmx/backend/theming) | — | `theming` | commonjs | 🟡 adapt | — | theme, theming, white-label, config |
+| [htmx response header helper](stacks/express-ejs-htmx/backend/htmx-helpers) | — | `htmx-helpers` | commonjs | 🟢 as-is | — | htmx, headers, hx-trigger, toast |
+| [Reviews (with media), Google review sync, marketing, journal](stacks/express-ejs-htmx/backend/reviews-and-marketing) | — | `reviews-and-marketing` | commonjs | 🟡 adapt | — | reviews, ugc, google-reviews, marketing |
+| [Server entry, health doctor, pm2 + Render deploy](stacks/express-ejs-htmx/backend/ops-and-deploy) | — | `ops-and-deploy` | commonjs | 🔵 reference | — | express, server, deploy, pm2 |
+

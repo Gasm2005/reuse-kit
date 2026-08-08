@@ -64,38 +64,34 @@ ${Object.entries(manifest.frameworkLegend)
   .map(([k, v]) => `- \`${k}\` — ${v}`)
   .join("\n")}
 
-## Stacks
+> **Admin panels** live in \`admin-panel/<stack>/\` rather than under \`stacks/\`, because a panel is
+> reused as a whole unit — shell, auth guard and CRUD screens together — not asset by asset.
 
 ${manifest.stacks
-  .map(
-    (s) =>
-      `### ${s.label}\n\n\`stacks/${s.id}/\` · deployed on ${s.deployedOn} · from ${s.sourceProjects.join(
-        ", ",
-      )}\n\n> ⚠️ ${s.caveat}`,
-  )
+  .map((s) => {
+    const mine = (side) => manifest.assets.filter((a) => a.stack === s.id && a.side === side);
+    const section = (title, rows) =>
+      rows.length ? `\n### ${title}\n\n${header}\n${rows.map(row).join("\n")}\n` : "";
+    return [
+      `---`,
+      ``,
+      `# ${s.label}`,
+      ``,
+      `\`stacks/${s.id}/\` · ${s.deployedOn} · from ${s.sourceProjects.join(", ")} · ${
+        manifest.assets.filter((a) => a.stack === s.id).length
+      } assets`,
+      ``,
+      `> ⚠️ **Portability:** ${s.caveat}`,
+      s.licence ? `>\n> ⚖️ **Licence:** ${s.licence}` : "",
+      section("Admin panel", mine("admin")),
+      section("Frontend", mine("frontend")),
+      section("Backend", mine("backend")),
+      section("Config", mine("config")),
+    ]
+      .filter((l) => l !== "")
+      .join("\n");
+  })
   .join("\n\n")}
-
-## Admin panel
-
-\`admin-panel/<stack>/\` — ${manifest.adminPanel?.note ?? ""}
-
-${header}
-${bySide("admin").map(row).join("\n")}
-
-## Frontend
-
-${header}
-${bySide("frontend").map(row).join("\n")}
-
-## Backend
-
-${header}
-${bySide("backend").map(row).join("\n")}
-
-## Config
-
-${header}
-${bySide("config").map(row).join("\n")}
 `;
 
 writeFileSync(join(root, "README.md"), out);

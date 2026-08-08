@@ -12,7 +12,9 @@
     "react": "Needs React. No router or meta-framework coupling.",
     "tanstack-start": "Uses createServerFn / createFileRoute / TanStack middleware. Needs a rewrite for other frameworks.",
     "sql": "Postgres / Supabase migration.",
-    "css": "Plain CSS. No build step required."
+    "css": "Plain CSS. No build step required.",
+    "commonjs": "Plain CommonJS Node module. No framework coupling — lifts into any Node app, Express or not.",
+    "ejs": "EJS server-rendered template. Needs Express + EJS, and htmx for the fragments."
   },
   "stacks": [
     {
@@ -23,6 +25,16 @@
         "artspire-v2"
       ],
       "caveat": "This is NOT plain Vite + React Router. Anything marked framework 'tanstack-start' will not drop into a plain React app without rewriting the server boundary."
+    },
+    {
+      "id": "express-ejs-htmx",
+      "label": "Node + Express + EJS + htmx, JSON file store (no database)",
+      "deployedOn": "Any Node host (render.yaml + pm2 ecosystem included)",
+      "sourceProjects": [
+        "ethnic-luxe-template"
+      ],
+      "caveat": "Server-rendered EJS with htmx fragments — there is no React here. Views are not portable to a React stack, but the backend modules are plain CommonJS with almost no framework coupling and lift cleanly into any Node app. The JSON store is SINGLE-PROCESS ONLY: under pm2 cluster mode two workers write from stale copies and silently lose orders (server.js refuses to boot in that case).",
+      "licence": "The source repo carries NO LICENSE file. Fine for your own reference; before shipping any of it to a paying client, confirm you own or are licensed for this code."
     }
   ],
   "assets": [
@@ -1282,6 +1294,1148 @@
         "note": "View source for the ld+json block"
       },
       "stack": "tanstack-start-supabase"
+    },
+    {
+      "id": "gst-invoicing-india",
+      "name": "GST tax invoices + GSTIN validation + GSTR-1 working papers",
+      "side": "backend",
+      "category": "india-gst",
+      "path": "stacks/express-ejs-htmx/backend/india-gst",
+      "files": [
+        "invoice.js",
+        "gstin.js",
+        "gst-return.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "gst",
+        "gstin",
+        "invoice",
+        "tax",
+        "india",
+        "gstr-1",
+        "cgst",
+        "sgst",
+        "igst",
+        "compliance",
+        "accounting"
+      ],
+      "summary": "Legally-shaped Indian GST invoicing, ~800 lines. Prices are GST-INCLUSIVE so tax is extracted from the line total (taxable = total / (1 + rate)), never added on top. Same state as seller → CGST + SGST at half rate each; different state → IGST at full rate, never both. One strictly sequential invoice series with no reuse and no gaps. GSTIN checked on format AND checksum. Plus GSTR-1 working papers pre-summarised into the portal's own tables (B2CS, B2CL, HSN, DOCS) the way a CA actually files.",
+      "adapt": "Point it at your own order shape and seller state. The tax maths and the return tables need no changes — they follow statute, not this project.",
+      "whyItMatters": "This is the part nobody wants to rewrite and everybody gets subtly wrong. A wrong GSTIN flows into GSTR-1, the buyer's input credit never appears, and someone loses a week on the phone. Extracting tax instead of adding it is the difference between a correct invoice and a 18%-off accident.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — place an order, then open its invoice"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "india-logistics",
+      "name": "Pincode lookup, COD rules, delivery zones",
+      "side": "backend",
+      "category": "india-logistics",
+      "path": "stacks/express-ejs-htmx/backend/india-logistics",
+      "files": [
+        "pincode.js",
+        "cod.js",
+        "delivery.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "pincode",
+        "cod",
+        "delivery",
+        "shipping",
+        "zones",
+        "india",
+        "checkout",
+        "rto",
+        "serviceability"
+      ],
+      "summary": "Pincode → city + state through three layers so a checkout field never spins: a local cache that grows as customers shop, then India Post's free public API, then a built-in prefix table (the first two digits identify the postal circle, so STATE is always answerable offline). COD as three independent switches — offered at all / full COD / partial advance — because full COD carries the whole RTO risk and should be opened deliberately. Delivery priced by ZONE, so a local order can go same-day by hand for free instead of paying a courier ₹199 to take three days.",
+      "adapt": "Set your own zones and COD thresholds in config. The pincode fallback table is national and stays as-is.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — enter a pincode at checkout"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-auth-scrypt",
+      "name": "Dependency-free admin auth (scrypt + signed cookie)",
+      "side": "backend",
+      "category": "auth-and-sessions",
+      "path": "stacks/express-ejs-htmx/backend/auth-and-sessions",
+      "files": [
+        "auth.js",
+        "secrets.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "auth",
+        "login",
+        "session",
+        "scrypt",
+        "hmac",
+        "cookie",
+        "stateless",
+        "no-dependencies",
+        "security"
+      ],
+      "summary": "330 lines, zero npm dependencies: scrypt for password hashing and an HMAC-signed cookie for the session, both from node:crypto. Sessions are stateless, so a restart logs nobody out and there is no session store to run. First boot with no users shows a one-time owner-setup form.",
+      "adapt": "Bring your own user storage. Nothing else to change.",
+      "whyItMatters": "No passport, no express-session, no Redis — which is what makes it viable to run many small stores on one box.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin/login shows first-run setup"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "json-file-store",
+      "name": "Atomic JSON file store with backups",
+      "side": "backend",
+      "category": "data-store",
+      "path": "stacks/express-ejs-htmx/backend/data-store",
+      "files": [
+        "store.js",
+        "zip.js",
+        "backup.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "database",
+        "json",
+        "store",
+        "persistence",
+        "atomic-write",
+        "backup",
+        "no-db",
+        "single-process"
+      ],
+      "summary": "A whole app's persistence with no database: reads cached in production and re-read in dev, writes atomic-ish (temp file + rename) with a timestamped backup taken first, so any admin action is recoverable from data/backups/. DATA_DIR is overridable, which is how one codebase serves a directory per tenant.",
+      "adapt": "READ THE HEADER COMMENT BEFORE USING. It is single-process only — read → mutate → write is synchronous so two requests in one process cannot interleave, but the cache is per-process, so pm2 cluster mode means two workers writing from stale copies and silently losing an order. server.js refuses to boot in that situation rather than let it happen quietly. Fine for a small store; move to Postgres before you need more than one process.",
+      "preview": {
+        "live": null,
+        "note": "No UI — read the module"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "commerce-core-express",
+      "name": "Commerce core — cart, orders, variants, pricing, discounts, returns",
+      "side": "backend",
+      "category": "commerce-core",
+      "path": "stacks/express-ejs-htmx/backend/commerce-core",
+      "files": [
+        "cart.js",
+        "orders.js",
+        "products.js",
+        "catalog.js",
+        "variants.js",
+        "pricing.js",
+        "discounts.js",
+        "returns.js",
+        "fulfilment.js",
+        "shopper.js",
+        "swatches.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "cart",
+        "orders",
+        "products",
+        "catalog",
+        "variants",
+        "stock",
+        "pricing",
+        "discounts",
+        "returns",
+        "refunds",
+        "fulfilment",
+        "ecommerce"
+      ],
+      "summary": "~2,300 lines of working storefront logic. Stock per size AND colour (a kurti with stock 12 is not twelve XL). A pricing waterfall — GST% and unit cost resolve product → category → config default — so a real per-SKU purchase cost drives margin instead of a guess. Discounts as percent / flat / free-shipping. Returns verified by order number plus the contact on the order, no account needed, and only a refund actually marked here moves money in the P&L, so the dashboard shows what was paid back rather than what was asked for.",
+      "adapt": "These read and write through store.js — swap that for your data layer and the logic carries over.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — the whole storefront"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "payment-adapter-layer",
+      "name": "Payment gateway adapter layer",
+      "side": "backend",
+      "category": "payments",
+      "path": "stacks/express-ejs-htmx/backend/payments",
+      "files": [
+        "payments.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "payments",
+        "razorpay",
+        "adapter",
+        "gateway",
+        "checkout",
+        "multi-tenant"
+      ],
+      "summary": "The checkout talks to ONE interface; an adapter talks to the gateway. Razorpay is implemented and the others are declared with the same shape, so adding a gateway is a single file, not a checkout rewrite.",
+      "adapt": "This is the shape to copy if you are moving between gateways — it makes the switch a file, not a project.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — checkout"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "notifications-adapter",
+      "name": "Notification adapter — SMTP / Resend / WhatsApp",
+      "side": "backend",
+      "category": "notifications",
+      "path": "stacks/express-ejs-htmx/backend/notifications",
+      "files": [
+        "notifications.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [
+        "nodemailer"
+      ],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "email",
+        "smtp",
+        "resend",
+        "whatsapp",
+        "sms",
+        "transactional",
+        "adapter",
+        "notifications"
+      ],
+      "summary": "464 lines. Same adapter shape as payments and for the same reason: every store brings its own sending account. SMTP (Gmail/Zoho/Hostinger), Resend over HTTP for hosts with SMTP ports blocked, and WhatsApp/SMS through the same door. Client pastes credentials once; the app never changes.",
+      "adapt": "Pairs with the email templates in frontend/email-templates.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — place an order to trigger mail"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "media-compression-pipeline",
+      "name": "Image + video compression pipeline",
+      "side": "backend",
+      "category": "media-pipeline",
+      "path": "stacks/express-ejs-htmx/backend/media-pipeline",
+      "files": [
+        "media.js",
+        "uploads.js",
+        "placeholder.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [
+        "sharp",
+        "ffmpeg-static",
+        "multer"
+      ],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "upload",
+        "image",
+        "video",
+        "compression",
+        "webp",
+        "h264",
+        "sharp",
+        "ffmpeg",
+        "progress",
+        "background-upload"
+      ],
+      "summary": "One pipeline for every upload in the app — customer review photos and video, admin product images, journal covers. Images → WebP, auto-rotated, resized to a max long edge. Video → H.264/AAC MP4, max 720p, faststart so it streams before fully loading. Both degrade gracefully: if sharp or ffmpeg is missing the original is kept and the reason reported, so an upload never fails outright. Files upload and compress in the background the moment they are chosen, while the customer is still typing their review, and each finished file gets a short-lived token the form carries as a hidden input — so submitting is instant.",
+      "adapt": "Change output paths and size caps.",
+      "whyItMatters": "The background-upload-with-tokens trick is the reason a review with a 40MB video submits instantly instead of making the customer wait.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — leave a review with a photo"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "commerce-analytics",
+      "name": "Commerce analytics, UTM attribution, audience switch",
+      "side": "backend",
+      "category": "analytics",
+      "path": "stacks/express-ejs-htmx/backend/analytics",
+      "files": [
+        "analytics.js",
+        "attribution.js",
+        "activity.js",
+        "audience.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "analytics",
+        "dashboard",
+        "kpi",
+        "revenue",
+        "gst",
+        "attribution",
+        "utm",
+        "cohort",
+        "audience",
+        "reporting"
+      ],
+      "summary": "650 lines computing every dashboard number from orders, with the money model written down explicitly: gross = what customers were charged, minus refunds = net sales, minus extracted GST and shipping collected = revenue ex-tax. Attribution remembers first and last touch from ?utm_source / ?ref in a 30-day cookie and stores both on the order, so you can answer whether an influencer post actually sold anything. The audience switch turns one codebase into a menswear, womenswear, kidswear or combined shop via config rather than four templates.",
+      "adapt": "The money model is the reusable part — copy those definitions before writing your own dashboard, they are easy to get wrong in a way nobody notices.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin dashboard"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "licensing-and-provisioning",
+      "name": "Offline-verifiable licence keys + one-command provisioning",
+      "side": "backend",
+      "category": "licensing-saas",
+      "path": "stacks/express-ejs-htmx/backend/licensing-saas",
+      "files": [
+        "license.js",
+        "plan.js",
+        "minting.js",
+        "provision.js",
+        "issue-license.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "licensing",
+        "saas",
+        "ed25519",
+        "signing",
+        "plan",
+        "gating",
+        "provisioning",
+        "multi-tenant",
+        "resale"
+      ],
+      "summary": "Sell the same codebase many times without losing control of it. A licence is a short token — this store, this plan, until this date — signed with an Ed25519 private key that lives ONLY on the agency machine. Every deployment ships the public key and verifies offline, so a client (or anyone who ever gets the code) can read a licence but cannot mint one, and cannot edit \"starter\" into \"scale\" without the signature failing. Provisioning scripts the dozen edits every launch repeats: brand, tax details, sections, plan, owner account, licence.",
+      "adapt": "Generate your OWN Ed25519 keypair — the source project's private key is deliberately not in this repo and must never be.",
+      "whyItMatters": "provision.js exists because doing it by hand fifty times is where a shop goes live still named after the template, with the handover password still working, or issuing invoices under someone else's GSTIN.",
+      "preview": {
+        "live": null,
+        "note": "CLI: node scripts/provision.js"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "import-export",
+      "name": "Catalog import/export",
+      "side": "backend",
+      "category": "import-export",
+      "path": "stacks/express-ejs-htmx/backend/import-export",
+      "files": [
+        "importer.js",
+        "exporter.js",
+        "import-products.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "import",
+        "export",
+        "csv",
+        "catalog",
+        "bulk",
+        "migration",
+        "preview"
+      ],
+      "summary": "690 lines. Bulk product import with a dry-run preview before anything is written, and exports for orders and catalog.",
+      "adapt": "Column mapping is per-catalog.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin/import"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "theming-contract",
+      "name": "Theme contract + config-driven theming",
+      "side": "backend",
+      "category": "theming",
+      "path": "stacks/express-ejs-htmx/backend/theming",
+      "files": [
+        "theme.js",
+        "config.js",
+        "settings.js",
+        "CONTRACT.md",
+        "theme-check.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "theme",
+        "theming",
+        "white-label",
+        "config",
+        "multi-tenant",
+        "contract",
+        "validation"
+      ],
+      "summary": "A documented contract for what a theme may override, plus a checker that validates a theme against it — so reskinning for a new client is a theme folder, not a fork.",
+      "adapt": "Read CONTRACT.md first; it is the design doc for the whole white-label approach.",
+      "preview": {
+        "live": null,
+        "note": "CLI: npm run theme:check"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "htmx-header-escaping",
+      "name": "htmx response header helper",
+      "side": "backend",
+      "category": "htmx-helpers",
+      "path": "stacks/express-ejs-htmx/backend/htmx-helpers",
+      "files": [
+        "hx.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "htmx",
+        "headers",
+        "hx-trigger",
+        "toast",
+        "ascii",
+        "encoding",
+        "bug-fix"
+      ],
+      "summary": "33 lines that prevent a whole class of dead request. HTTP header values must be ASCII, so a toast like \"Refunded ₹50,000\" — or one containing a typographic quote — crashes res.setHeader with ERR_INVALID_CHAR, and because the header is set before the body, the entire request dies instead of degrading. Everything emitting HX-Trigger goes through here, escaping non-ASCII to JSON unicode escapes.",
+      "adapt": "None. Copy it and route every HX-Trigger through it.",
+      "whyItMatters": "Any Indian-rupee app using htmx toasts will hit this. Thirty-three lines for a bug that looks like a server crash.",
+      "preview": {
+        "live": null,
+        "note": "No UI — read the module"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "reviews-and-marketing",
+      "name": "Reviews (with media), Google review sync, marketing, journal",
+      "side": "backend",
+      "category": "reviews-and-marketing",
+      "path": "stacks/express-ejs-htmx/backend/reviews-and-marketing",
+      "files": [
+        "reviews.js",
+        "reviews-google.js",
+        "marketing.js",
+        "journal.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "reviews",
+        "ugc",
+        "google-reviews",
+        "marketing",
+        "seo",
+        "journal",
+        "blog",
+        "audit"
+      ],
+      "summary": "Verified reviews with photo/video, no account needed (order number + contact on the order). Google review import. A marketing audit that reports what is missing for SEO. A journal/blog with its own admin.",
+      "adapt": "Reviews depend on the media pipeline and the order shape.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — product page reviews"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-ops-deploy",
+      "name": "Server entry, health doctor, pm2 + Render deploy",
+      "side": "backend",
+      "category": "ops-and-deploy",
+      "path": "stacks/express-ejs-htmx/backend/ops-and-deploy",
+      "files": [
+        "server.js",
+        "doctor.js",
+        "ecosystem.config.js",
+        "render.yaml",
+        "DEPLOY.md"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [
+        "express",
+        "ejs",
+        "cookie-parser"
+      ],
+      "tested": false,
+      "reuse": "reference",
+      "tags": [
+        "express",
+        "server",
+        "deploy",
+        "pm2",
+        "render",
+        "health-check",
+        "doctor",
+        "ops"
+      ],
+      "summary": "The Express entry (which refuses to boot under cluster mode because the JSON store cannot survive it), a doctor script that checks a deployment's config and dependencies before you find out from a customer, and working pm2 + Render deploy config.",
+      "adapt": "Read for the boot-time guard and the doctor idea; the rest is deployment-specific.",
+      "preview": {
+        "live": null,
+        "note": "CLI: npm run doctor"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "storefront-ejs-pages",
+      "name": "Storefront pages (EJS)",
+      "side": "frontend",
+      "category": "storefront-pages",
+      "path": "stacks/express-ejs-htmx/frontend/storefront-pages",
+      "files": [
+        "home.ejs",
+        "listing.ejs",
+        "product.ejs",
+        "cart.ejs",
+        "checkout.ejs",
+        "order.ejs",
+        "orders.ejs",
+        "returns.ejs",
+        "wishlist.ejs",
+        "journal.ejs",
+        "journal-post.ejs",
+        "404.ejs",
+        "invoice.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs",
+        "express"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "storefront",
+        "ejs",
+        "home",
+        "listing",
+        "product",
+        "cart",
+        "checkout",
+        "pdp",
+        "plp",
+        "invoice",
+        "ecommerce"
+      ],
+      "summary": "A complete server-rendered storefront: home, category listing with filters, product detail, cart, multi-step checkout, order tracking, returns, wishlist, journal, 404, and a printable invoice.",
+      "adapt": "EJS + htmx — not portable to React. Read them for the flow and the copy; the checkout step sequence in particular is worth studying before designing your own.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "storefront-partials",
+      "name": "Layout partials — header, footer, drawer, filters, product card",
+      "side": "frontend",
+      "category": "layout-partials",
+      "path": "stacks/express-ejs-htmx/frontend/layout-partials",
+      "files": [
+        "app-shell.ejs",
+        "header.ejs",
+        "footer.ejs",
+        "app-footer.ejs",
+        "mobile-drawer.ejs",
+        "filters.ejs",
+        "active-chips.ejs",
+        "product-card.ejs",
+        "product-media.ejs",
+        "search.ejs",
+        "order-summary.ejs",
+        "audience-gate.ejs",
+        "document-open.ejs",
+        "document-close.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "header",
+        "navbar",
+        "footer",
+        "drawer",
+        "mobile-nav",
+        "filters",
+        "product-card",
+        "search",
+        "layout",
+        "shell"
+      ],
+      "summary": "The reusable chrome: app shell, header, mobile drawer, footer, faceted filters with active-filter chips, product card, product media, search, order summary, and an audience gate.",
+      "adapt": "This is the header/navbar/footer material for this stack — the React stack has none worth lifting.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "htmx-fragments",
+      "name": "htmx fragments — the interactivity layer",
+      "side": "frontend",
+      "category": "htmx-fragments",
+      "path": "stacks/express-ejs-htmx/frontend/htmx-fragments",
+      "files": [
+        "cart-drawer.ejs",
+        "cart-badges.ejs",
+        "cart-page.ejs",
+        "checkout-step.ejs",
+        "checkout-aside.ejs",
+        "checkout-pay.ejs",
+        "quick-view.ejs",
+        "search-suggest.ejs",
+        "pincode-result.ejs",
+        "size-chart.ejs",
+        "wishlist-button.ejs",
+        "review-form.ejs",
+        "review-media-list.ejs",
+        "returns-lookup.ejs",
+        "grid-items.ejs",
+        "home-section.ejs",
+        "newsletter-result.ejs",
+        "deliverability.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs",
+        "htmx"
+      ],
+      "tested": false,
+      "reuse": "reference",
+      "tags": [
+        "htmx",
+        "fragments",
+        "cart-drawer",
+        "quick-view",
+        "search-suggest",
+        "live-search",
+        "partial-render",
+        "no-spa",
+        "progressive-enhancement"
+      ],
+      "summary": "Every interaction that a React app would use client state for, done as a server-rendered fragment swapped in by htmx: cart drawer, cart badge, checkout steps, quick view, search suggestions, pincode check, size chart, wishlist toggle, review form with media, returns lookup, infinite grid, newsletter.",
+      "adapt": "The fragments themselves are stack-bound, but the PATTERN is the lesson: no client state, no hydration, no bundle — the server returns HTML and htmx swaps it. Study this before reaching for React on a content or commerce site.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — open the cart drawer, type in search"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "transactional-email-templates",
+      "name": "Transactional email templates",
+      "side": "frontend",
+      "category": "email-templates",
+      "path": "stacks/express-ejs-htmx/frontend/email-templates",
+      "files": [
+        "order-placed.ejs",
+        "order-placed-admin.ejs",
+        "order-status.ejs",
+        "return-status.ejs",
+        "return-status-admin.ejs",
+        "generic.ejs",
+        "_head.ejs",
+        "_foot.ejs",
+        "_order-table.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs"
+      ],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "email",
+        "transactional",
+        "order-confirmation",
+        "order-status",
+        "returns",
+        "html-email",
+        "templates"
+      ],
+      "summary": "Nine templates with shared head/foot/order-table partials, covering customer and admin sides of order placement, order status changes, and returns.",
+      "adapt": "Swap the branding. Genuinely the best-covered email set in this kit — the React stack has one order-confirmation template.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — place an order"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "storefront-css-js",
+      "name": "Storefront CSS + JS",
+      "side": "frontend",
+      "category": "styles-and-scripts",
+      "path": "stacks/express-ejs-htmx/frontend/styles-and-scripts",
+      "files": [
+        "app.css",
+        "app.js"
+      ],
+      "framework": "css",
+      "runtime": "browser",
+      "deps": [],
+      "tested": false,
+      "reuse": "reference",
+      "tags": [
+        "css",
+        "styles",
+        "javascript",
+        "htmx-config",
+        "storefront",
+        "theme"
+      ],
+      "summary": "The storefront stylesheet and the small amount of JS that supports htmx.",
+      "adapt": "Brand-specific. Read for the htmx configuration and the interaction glue.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-admin-routes",
+      "name": "Admin routes + access gate",
+      "side": "admin",
+      "category": "routes",
+      "path": "admin-panel/express-ejs-htmx/routes",
+      "files": [
+        "admin.js",
+        "admin-content.js",
+        "gate.js"
+      ],
+      "framework": "commonjs",
+      "runtime": "server",
+      "deps": [
+        "express"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "admin",
+        "routes",
+        "express",
+        "gate",
+        "authorization",
+        "plan-gating"
+      ],
+      "summary": "1,750 lines wiring the whole admin: every page, every htmx fragment endpoint, and the gate that enforces both authentication and plan entitlement.",
+      "adapt": "The gate pattern (auth AND plan in one place) is the reusable part.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-admin-shell",
+      "name": "Admin shell, login, lock screens",
+      "side": "admin",
+      "category": "shell",
+      "path": "admin-panel/express-ejs-htmx/shell",
+      "files": [
+        "login.ejs",
+        "forbidden.ejs",
+        "locked.ejs",
+        "open.ejs",
+        "close.ejs",
+        "kpi.ejs",
+        "chart-bars.ejs",
+        "chart-barlist.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "admin",
+        "shell",
+        "login",
+        "layout",
+        "kpi",
+        "charts",
+        "forbidden",
+        "locked"
+      ],
+      "summary": "The admin layout open/close partials, login, a forbidden page, a licence-expired lock screen, and reusable KPI tile and bar-chart partials — dependency-free charts, no charting library.",
+      "adapt": "The KPI and chart partials are the pieces worth taking anywhere.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin/login"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-admin-dashboard",
+      "name": "Admin dashboard + reports",
+      "side": "admin",
+      "category": "dashboard-reports",
+      "path": "admin-panel/express-ejs-htmx/dashboard-reports",
+      "files": [
+        "dashboard.ejs",
+        "reports.ejs",
+        "dashboard-body.ejs",
+        "fact-list.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "admin",
+        "dashboard",
+        "reports",
+        "kpi",
+        "revenue",
+        "charts",
+        "analytics"
+      ],
+      "summary": "Dashboard and reports UI over analytics.js, with the body as an htmx fragment so date-range changes swap without a reload.",
+      "adapt": "Pairs with backend/analytics.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-admin-catalog",
+      "name": "Catalog admin — products, variants, stock grid, categories",
+      "side": "admin",
+      "category": "catalog",
+      "path": "admin-panel/express-ejs-htmx/catalog",
+      "files": [
+        "products.ejs",
+        "product-edit.ejs",
+        "categories.ejs",
+        "product-rows.ejs",
+        "product-gallery.ejs",
+        "stock-cell.ejs",
+        "stock-grid.ejs",
+        "category-rows.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs",
+        "htmx"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "admin",
+        "products",
+        "catalog",
+        "variants",
+        "stock",
+        "inventory",
+        "gallery",
+        "categories",
+        "inline-edit"
+      ],
+      "summary": "Product list, full editor with media gallery, category management, and a size × colour stock grid where each cell saves inline via htmx — the nicest piece of admin UX in this kit.",
+      "adapt": "Pairs with commerce-core (variants.js, products.js) and the media pipeline.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin/products"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-admin-orders",
+      "name": "Orders + returns admin",
+      "side": "admin",
+      "category": "orders",
+      "path": "admin-panel/express-ejs-htmx/orders",
+      "files": [
+        "orders.ejs",
+        "order-detail.ejs",
+        "returns.ejs",
+        "order-rows.ejs",
+        "order-detail-body.ejs",
+        "return-rows.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs",
+        "htmx"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "admin",
+        "orders",
+        "fulfilment",
+        "returns",
+        "refunds",
+        "status",
+        "invoice"
+      ],
+      "summary": "Order list and detail with status transitions, fulfilment, invoice access, and the returns approve → received → refund flow.",
+      "adapt": "Pairs with commerce-core and india-gst.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin/orders"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-admin-marketing",
+      "name": "Discounts, marketing audit, journal admin",
+      "side": "admin",
+      "category": "marketing",
+      "path": "admin-panel/express-ejs-htmx/marketing",
+      "files": [
+        "discounts.ejs",
+        "marketing.ejs",
+        "journal.ejs",
+        "journal-edit.ejs",
+        "marketing-audit.ejs",
+        "journal-rows.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs",
+        "htmx"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "admin",
+        "discounts",
+        "coupons",
+        "marketing",
+        "seo-audit",
+        "journal",
+        "blog",
+        "cms"
+      ],
+      "summary": "Discount management, a marketing audit page that lists what is missing for SEO, and a journal/blog editor.",
+      "adapt": "The marketing-audit idea (a page that tells the owner what is unfinished) transfers to any stack.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin/marketing"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-admin-settings",
+      "name": "Settings, customers, activity log, import/export admin",
+      "side": "admin",
+      "category": "settings",
+      "path": "admin-panel/express-ejs-htmx/settings",
+      "files": [
+        "settings.ejs",
+        "account.ejs",
+        "customers.ejs",
+        "activity.ejs",
+        "export.ejs",
+        "import.ejs",
+        "import-preview.ejs",
+        "import-result.ejs",
+        "connection-panels.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs",
+        "htmx"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "admin",
+        "settings",
+        "customers",
+        "activity-log",
+        "audit-trail",
+        "import",
+        "export",
+        "connections",
+        "credentials"
+      ],
+      "summary": "Store settings, owner account, customer list, an activity/audit log of admin actions, CSV import with dry-run preview, exports, and connection panels where a client pastes gateway and SMTP credentials.",
+      "adapt": "The connection-panels pattern (client pastes their own credentials, app never redeploys) is the reusable idea.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin/settings"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-admin-licensing",
+      "name": "Licence + plan admin",
+      "side": "admin",
+      "category": "licensing",
+      "path": "admin-panel/express-ejs-htmx/licensing",
+      "files": [
+        "license.ejs",
+        "plan.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "admin",
+        "licence",
+        "plan",
+        "upgrade",
+        "saas",
+        "gating"
+      ],
+      "summary": "Licence status and plan/upgrade screens.",
+      "adapt": "Pairs with backend/licensing-saas.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin/license"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-admin-css-js",
+      "name": "Admin CSS + JS",
+      "side": "admin",
+      "category": "styles-and-scripts",
+      "path": "admin-panel/express-ejs-htmx/styles-and-scripts",
+      "files": [
+        "admin.css",
+        "admin.js"
+      ],
+      "framework": "css",
+      "runtime": "browser",
+      "deps": [],
+      "tested": false,
+      "reuse": "as-is",
+      "tags": [
+        "admin",
+        "css",
+        "styles",
+        "javascript",
+        "dashboard-ui",
+        "tables",
+        "forms"
+      ],
+      "summary": "The admin stylesheet and its JS — a complete, dense admin UI with no component library at all.",
+      "adapt": "Largely brand-neutral; this is genuinely liftable as an admin design system.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin"
+      },
+      "stack": "express-ejs-htmx"
+    },
+    {
+      "id": "express-admin-reviews",
+      "name": "Review moderation admin",
+      "side": "admin",
+      "category": "reviews",
+      "path": "admin-panel/express-ejs-htmx/reviews",
+      "files": [
+        "reviews.ejs",
+        "review-groups.ejs"
+      ],
+      "framework": "ejs",
+      "runtime": "server",
+      "deps": [
+        "ejs",
+        "htmx"
+      ],
+      "tested": false,
+      "reuse": "adapt",
+      "tags": [
+        "admin",
+        "reviews",
+        "moderation",
+        "ugc",
+        "approve"
+      ],
+      "summary": "Review moderation grouped by product, with the media each review carries.",
+      "adapt": "Pairs with reviews-and-marketing.",
+      "preview": {
+        "live": null,
+        "note": "Not deployed — run it: npm i && npm start, then http://localhost:3000 — /admin/reviews"
+      },
+      "stack": "express-ejs-htmx"
     }
   ],
   "adminPanel": {

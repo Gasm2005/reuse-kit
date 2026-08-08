@@ -5,3 +5,8 @@ node_modules/
 *.log
 .vercel/
 dist/
+
+# Never commit signing keys or client data harvested from source projects
+.license-keys/
+clients/*-data/
+data/
