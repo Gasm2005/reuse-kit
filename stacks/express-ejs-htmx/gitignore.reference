@@ -1,0 +1,28 @@
+node_modules/
+npm-debug.log*
+.env
+.env.local
+data/backups/
+.DS_Store
+Thumbs.db
+uploads/
+data/secrets.json
+
+# licence signing key — must never leave the agency machine
+.license-keys/
+data/license.json
+
+# admin accounts: password hashes are per-deployment, and a fresh clone should
+# run its own first-time owner setup rather than inherit ours
+data/users.json
+
+# notification + activity logs are runtime noise, not source
+data/notifications.json
+data/activity.json
+
+# local backup archives — copy these off the machine, do not commit them
+backups/
+
+# A client's own store data — real customers, real orders, its own secrets.
+# Only the config and the theme belong in the repo.
+clients/*-data/

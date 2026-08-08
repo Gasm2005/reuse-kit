@@ -1,295 +1,392 @@
-#!/usr/bin/env node
 'use strict';
 
 /**
- * Sold to live — AGENCY MACHINE ONLY.
+ * Turning a sold store into a live one.
  *
- *   npm run provision -- --template > client.json     write a spec to fill in
- *   npm run provision -- --file client.json --dry-run validate, change nothing
- *   npm run provision -- --file client.json           do it
+ * The same codebase is resold many times, so every launch repeats the same dozen
+ * edits: the brand, the tax details that make an invoice legal, which sections the shop
+ * sells to, the plan, the owner account, the licence. Doing that by hand once is fine.
+ * Doing it fifty times is where a shop goes live still called AANYÄ, or with the
+ * handover password still working, or issuing invoices under someone else's GSTIN.
  *
- * The spec is a file rather than a set of prompts on purpose. This runs once per
- * client, dozens of times: a file can be filled in before the meeting, checked by
- * someone else, kept as the record of what was agreed, and re-run when a detail turns
- * out to be wrong. Fifteen typed answers cannot be any of those things.
+ * Two rules shape this file.
  *
- * Everything is validated before anything is written. A half-provisioned store is
- * worse than an untouched one — the brand is the client's, the GSTIN is still
- * somebody else's, and no screen tells you which.
+ * VALIDATE EVERYTHING BEFORE WRITING ANYTHING. A half-provisioned store is worse than
+ * an untouched one: the brand is theirs, the GSTIN is not, and nothing on screen says
+ * which. Every check runs first, and a single failure means no file is touched.
  *
- * What this cannot do, and says so at the end: real product photography, the payment
- * gateway keys, and the mail provider credentials. Those belong to the client and only
- * they can hand them over.
+ * NEVER TAKE A PASSWORD AS INPUT. The owner password is generated here and printed
+ * once. A password that arrives in a spec file is a password that lives in a WhatsApp
+ * thread forever.
  */
 
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
+const invoice = require('./invoice');
+const gstin = require('./gstin');
+const { PLANS } = require('./plan');
+
 const ROOT = path.join(__dirname, '..');
-const provision = require('../src/provision');
-const minting = require('../src/minting');
-const { PLANS } = require('../src/plan');
+const CONFIG_PATH = path.join(ROOT, 'config', 'site.config.json');
 
-/* ---------------------------------------------------------------- args ---- */
+/* ------------------------------------------------------------ the spec ---- */
 
-function parseArgs(argv) {
-  const out = { _: [] };
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (!arg.startsWith('--')) { out._.push(arg); continue; }
-    const key = arg.slice(2);
-    const next = argv[i + 1];
-    if (next === undefined || next.startsWith('--')) { out[key] = true; } else { out[key] = next; i += 1; }
+/**
+ * An example spec, written out by `--template`. Comment keys are deliberate: a JSON
+ * file someone fills in a week before the meeting needs to explain itself.
+ */
+function template() {
+  return {
+    _readme: [
+      'One client. Fill this in, then: npm run provision -- --file client.json',
+      'Run with --dry-run first: it validates everything and writes nothing.',
+      'Do NOT put a password here — provisioning generates one and prints it once.'
+    ],
+    brand: {
+      name: 'Meera Couture',
+      logoText: 'MEERA',
+      logoSubtext: 'COUTURE',
+      tagline: 'Hand-worked festive wear from Lucknow',
+      supportPhone: '+91 98000 00000',
+      supportEmail: 'care@meeracouture.in'
+    },
+    business: {
+      legalName: 'Meera Couture Private Limited',
+      tradeName: 'Meera Couture',
+      gstin: '09AABCM1234A1Z5',
+      pan: 'AABCM1234A',
+      addressLines: ['12 Hazratganj', 'Lucknow 226001'],
+      state: 'Uttar Pradesh',
+      invoicePrefix: 'MC',
+      defaultHsn: '6211',
+      signatureName: 'For Meera Couture Private Limited',
+      // Optional. Left out, the invoice simply carries no bank block — which is
+      // correct, and far better than carrying somebody else's.
+      bank: {
+        name: 'HDFC Bank',
+        accountName: 'Meera Couture Private Limited',
+        accountNumber: 'XXXXXXXX0000',
+        ifsc: 'HDFC0000000',
+        upi: 'meera@hdfcbank'
+      }
+    },
+    footer: {
+      blurb: 'Hand-worked festive and occasion wear, made in Lucknow.',
+      copyright: '© Meera Couture. All rights reserved.'
+    },
+    owner: {
+      name: 'Meera Singh',
+      email: 'meera@meeracouture.in'
+    },
+    audiences: ['women', 'men'],
+    fulfilment: {
+      madeToOrder: false,
+      complimentaryCustomisation: false
+    },
+    licence: {
+      plan: 'growth',
+      months: 12,
+      domains: ['meeracouture.in', 'www.meeracouture.in'],
+      extras: []
+    },
+    catalogue: 'keep-demo'
+  };
+}
+
+/* ---------------------------------------------------------- validation ---- */
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+const PAN = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+const DOMAIN = /^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/i;
+const CATALOGUE_CHOICES = ['keep-demo', 'empty'];
+
+/**
+ * Is this string still the demo store's?
+ *
+ * The demo brand is written "AANYÄ", and /aanya/i does not match it — Ä is not a. The
+ * guard here and the one in doctor were both that regex, so the brand-name check had
+ * never once fired; the only reason a demo store was ever flagged is that its support
+ * email happened to be care@aanya.example. Diacritics are stripped first now, so the
+ * name is actually checked.
+ */
+function looksLikeDemo(value) {
+  const plain = String(value || '')
+    .normalize('NFD')                 // splits Ä into A + combining diaeresis
+    .replace(/\p{Diacritic}/gu, '')   // …which this then drops
+    .toLowerCase();
+  return /aanya/.test(plain);
+}
+
+/**
+ * Every problem with the spec, in one pass.
+ *
+ * Returns them all rather than throwing on the first: someone filling this in before a
+ * client meeting should learn about four mistakes at once, not discover a fifth run
+ * later that the PAN was wrong too.
+ */
+function validate(spec, { config } = {}) {
+  const errors = [];
+  const warnings = [];
+  const need = (cond, msg) => { if (!cond) errors.push(msg); };
+
+  if (!spec || typeof spec !== 'object') return { ok: false, errors: ['The spec is not an object.'], warnings };
+
+  /* --- brand --- */
+  const brand = spec.brand || {};
+  need(brand.name, 'brand.name is required — it is the shop\'s name everywhere.');
+  need(!looksLikeDemo(brand.name), 'brand.name is still the demo brand.');
+  need(brand.supportEmail, 'brand.supportEmail is required — customers reply to it.');
+  if (brand.supportEmail) need(EMAIL.test(brand.supportEmail), `brand.supportEmail "${brand.supportEmail}" is not an email address.`);
+  if (!brand.supportPhone) warnings.push('No brand.supportPhone — the storefront and invoices will show no number to call.');
+  if (!brand.logoText) warnings.push('No brand.logoText — the header will fall back to the full brand name.');
+
+  /* --- business: this is what makes an invoice a legal document --- */
+  const biz = spec.business || {};
+  need(biz.legalName, 'business.legalName is required — an invoice is issued by a legal entity, not a brand.');
+  need(biz.gstin, 'business.gstin is required.');
+  if (biz.gstin) {
+    const g = gstin.check(biz.gstin);
+    // The check digit catches a typed-in GSTIN that looks right and is not. Issuing a
+    // year of invoices under a wrong number is not a fixable mistake.
+    need(g.ok, `business.gstin ${biz.gstin} is invalid: ${g.reason || 'failed the check digit'}`);
   }
+  need(biz.pan, 'business.pan is required — it appears on the invoice.');
+  if (biz.pan) need(PAN.test(String(biz.pan).toUpperCase()), `business.pan "${biz.pan}" is not shaped like a PAN.`);
+  need(Array.isArray(biz.addressLines) && biz.addressLines.filter(Boolean).length,
+    'business.addressLines is required — an invoice needs a place of business.');
+  need(biz.state, 'business.state is required — it decides CGST+SGST versus IGST on every order.');
+  if (biz.state) {
+    const code = invoice.stateCode(biz.state);
+    need(code, `business.state "${biz.state}" is not a state we have a GST code for.`);
+    // The GSTIN's first two digits ARE the state code; a mismatch means one of them is
+    // wrong, and every invoice would carry the wrong place of supply.
+    if (code && biz.gstin && gstin.check(biz.gstin).ok && String(biz.gstin).slice(0, 2) !== code) {
+      errors.push(`business.gstin starts ${String(biz.gstin).slice(0, 2)} but ${biz.state} is state code ${code} — one of them is wrong.`);
+    }
+  }
+  if (!biz.invoicePrefix) warnings.push('No business.invoicePrefix — the invoice series will use the default.');
+
+  /* --- the person who will run it --- */
+  const owner = spec.owner || {};
+  need(owner.name, 'owner.name is required.');
+  need(owner.email, 'owner.email is required — it is their login.');
+  if (owner.email) need(EMAIL.test(owner.email), `owner.email "${owner.email}" is not an email address.`);
+  if (owner.password || (spec.owner && spec.owner.pass)) {
+    errors.push('Remove owner.password. Provisioning generates one and prints it once — a password in a spec file lives in a chat thread forever.');
+  }
+
+  /* --- which sections the shop sells to --- */
+  const known = ((config && config.audiences && config.audiences.list) || []).map((a) => a.id);
+  if (spec.audiences !== undefined) {
+    need(Array.isArray(spec.audiences) && spec.audiences.length,
+      'audiences must be a non-empty list, e.g. ["women"] or ["women","men","kids"].');
+    (Array.isArray(spec.audiences) ? spec.audiences : []).forEach((id) => {
+      need(known.includes(id), `audiences: "${id}" is not one of ${known.join(', ') || '(none configured)'}.`);
+    });
+  }
+
+  /* --- licence --- */
+  const lic = spec.licence || {};
+  if (lic.plan !== undefined) {
+    need(PLANS.some((p) => p.id === lic.plan), `licence.plan "${lic.plan}" is not one of ${PLANS.map((p) => p.id).join(', ')}.`);
+  }
+  if (lic.months !== undefined) {
+    need(Number.isFinite(Number(lic.months)) && Number(lic.months) > 0, 'licence.months must be a positive number.');
+  }
+  (lic.domains || []).forEach((d) => {
+    need(DOMAIN.test(String(d)), `licence.domains: "${d}" is not a domain (no scheme, no path).`);
+  });
+  if (!(lic.domains || []).length) {
+    warnings.push('No licence.domains — the key will work on any host, including one the client stands up themselves.');
+  }
+
+  /* --- catalogue --- */
+  if (spec.catalogue !== undefined) {
+    need(CATALOGUE_CHOICES.includes(spec.catalogue),
+      `catalogue must be one of ${CATALOGUE_CHOICES.join(', ')}.`);
+  }
+
+  return { ok: errors.length === 0, errors, warnings };
+}
+
+/* ------------------------------------------------------------- password ---- */
+
+/**
+ * A password the client will actually type once and then change.
+ *
+ * Deliberately readable — words and a number, not 24 random bytes. A password nobody
+ * can read over the phone gets written on a sticky note, which is worse than a
+ * slightly shorter one they will replace on first login anyway.
+ */
+const WORDS = [
+  'marigold', 'brocade', 'zardozi', 'chikan', 'banarasi', 'kanjivaram', 'jamdani',
+  'tussar', 'organza', 'chanderi', 'phulkari', 'bandhani', 'mashru', 'gota'
+];
+
+function generatePassword() {
+  const pick = () => WORDS[crypto.randomInt(WORDS.length)];
+  const word = (w) => w[0].toUpperCase() + w.slice(1);
+  // Two distinct words, so it never reads as a doubled typo.
+  let a = pick(); let b = pick();
+  while (b === a) b = pick();
+  return `${word(a)}-${word(b)}-${crypto.randomInt(1000, 10000)}`;
+}
+
+/* --------------------------------------------------------------- config ---- */
+
+function readConfig() {
+  return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+}
+
+/**
+ * Copies the config aside before it is overwritten.
+ *
+ * store.backup() only knows about data/, so it would look for config/site.config.json
+ * in the wrong directory and quietly return null — leaving a run that pointed at the
+ * wrong store with no way back.
+ */
+function backupConfig() {
+  const dir = path.join(ROOT, 'data', 'backups');
+  fs.mkdirSync(dir, { recursive: true });
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const dest = path.join(dir, `site.config-${stamp}.json`);
+  fs.copyFileSync(CONFIG_PATH, dest);
+  return path.relative(ROOT, dest);
+}
+
+/**
+ * The new config, as a value. Nothing is written here, so a caller can diff it or
+ * throw it away — which is what --dry-run does.
+ */
+function planConfig(spec, current) {
+  const next = JSON.parse(JSON.stringify(current));
+  const brand = spec.brand || {};
+  const biz = spec.business || {};
+
+  next.brand = {
+    ...next.brand,
+    name: brand.name,
+    logoText: brand.logoText || brand.name,
+    logoSubtext: brand.logoSubtext !== undefined ? brand.logoSubtext : '',
+    tagline: brand.tagline || next.brand.tagline,
+    supportPhone: brand.supportPhone || '',
+    supportEmail: brand.supportEmail,
+    // The monogram is the favicon letter; derived so nobody has to think about it.
+    monogram: brand.monogram || String(brand.name).trim()[0].toUpperCase()
+  };
+
+  /* The bank block is PRINTED ON THE INVOICE. Leaving the demo's HDFC account and
+     "aanya@hdfcbank" there is the worst thing on this page: a customer could pay a
+     client's invoice into our demo account. Absent beats wrong, so an unspecified bank
+     is cleared rather than inherited. */
+  const bank = biz.bank && biz.bank.accountName ? biz.bank : null;
+
+  next.business = {
+    ...next.business,
+    bank: bank
+      ? { ...bank }
+      : { name: '', accountName: '', accountNumber: '', ifsc: '', upi: '' },
+    legalName: biz.legalName,
+    tradeName: biz.tradeName || brand.name,
+    gstin: gstin.normalise(biz.gstin),
+    pan: String(biz.pan).toUpperCase(),
+    addressLines: biz.addressLines.filter(Boolean),
+    state: biz.state,
+    stateCode: invoice.stateCode(biz.state),
+    phone: biz.phone || brand.supportPhone || '',
+    email: biz.email || brand.supportEmail,
+    invoicePrefix: biz.invoicePrefix || next.business.invoicePrefix,
+    defaultHsn: biz.defaultHsn || next.business.defaultHsn,
+    signatureName: biz.signatureName || `For ${biz.legalName}`
+  };
+
+  /* Sections: keep the configured entries, in the client's order, and drop the rest.
+     A menswear-only shop should carry no trace of the feature. */
+  if (Array.isArray(spec.audiences) && spec.audiences.length) {
+    const byId = new Map(((current.audiences && current.audiences.list) || []).map((a) => [a.id, a]));
+    next.audiences = {
+      ...next.audiences,
+      list: spec.audiences.map((id) => byId.get(id)).filter(Boolean)
+    };
+  }
+
+  if (spec.fulfilment) {
+    next.features = { ...next.features, ...pickFulfilment(spec.fulfilment) };
+  }
+
+  if (spec.licence && spec.licence.plan) {
+    next.plan = spec.licence.plan;
+    next.planExtras = [...(spec.licence.extras || [])];
+  }
+
+  // The announcement bar ships with demo copy about bridal customisation.
+  if (next.brand.announcement && (looksLikeDemo(next.brand.announcement) || /complimentary/i.test(next.brand.announcement))) {
+    next.brand.announcement = brand.announcement !== undefined ? brand.announcement : '';
+  }
+
+  /* Order mail replies. The demo address here means a client's customers reply into an
+     inbox nobody reads — and they reply to confirmations more than to anything else. */
+  next.notifications = {
+    ...next.notifications,
+    fromName: brand.name,
+    replyTo: brand.supportEmail,
+    storeEmail: (spec.owner && spec.owner.email) || brand.supportEmail,
+    storePhone: brand.supportPhone || ''
+  };
+
+  // Visible demo prose. Cleared when not supplied: an empty footer line is invisible,
+  // a wrong one is on every page.
+  const footer = spec.footer || {};
+  next.footer = {
+    ...next.footer,
+    blurb: footer.blurb !== undefined ? footer.blurb : '',
+    copyright: footer.copyright !== undefined ? footer.copyright : `© ${brand.name}. All rights reserved.`
+  };
+
+  return next;
+}
+
+/** Only the flags we know about, so a typo in the spec cannot invent a feature. */
+function pickFulfilment(f) {
+  const out = {};
+  if (f.madeToOrder !== undefined) out.madeToOrder = !!f.madeToOrder;
+  if (f.complimentaryCustomisation !== undefined) out.complimentaryCustomisation = !!f.complimentaryCustomisation;
+  if (f.measurementNotes !== undefined) out.measurementNotes = !!f.measurementNotes;
+  if (f.atelierLanguage !== undefined) out.atelierLanguage = !!f.atelierLanguage;
   return out;
 }
 
-const args = parseArgs(process.argv.slice(2));
+/** What changed, in words, for the summary and for --dry-run. */
+function diff(before, after, prefix = '') {
+  const lines = [];
+  const keys = new Set([...Object.keys(before || {}), ...Object.keys(after || {})]);
 
-/* --------------------------------------------------------------- output ---- */
+  keys.forEach((k) => {
+    if (k.startsWith('_')) return;
+    const a = before ? before[k] : undefined;
+    const b = after ? after[k] : undefined;
+    const label = prefix ? `${prefix}.${k}` : k;
 
-const C = process.stdout.isTTY
-  ? { red: '\x1b[31m', yellow: '\x1b[33m', green: '\x1b[32m', dim: '\x1b[2m', bold: '\x1b[1m', off: '\x1b[0m' }
-  : { red: '', yellow: '', green: '', dim: '', bold: '', off: '' };
-
-const say = (s = '') => console.log(s);
-const head = (s) => say(`\n  ${C.bold}${s}${C.off}`);
-const bad = (s) => say(`    ${C.red}✗${C.off}  ${s}`);
-const warn = (s) => say(`    ${C.yellow}!${C.off}  ${s}`);
-const good = (s) => say(`    ${C.green}✓${C.off}  ${s}`);
-const note = (s) => say(`       ${C.dim}${s}${C.off}`);
-
-function die(message) {
-  say(`\n  ${C.red}${message}${C.off}\n`);
-  process.exit(1);
-}
-
-/* ------------------------------------------------------------- template ---- */
-
-if (args.template) {
-  process.stdout.write(JSON.stringify(provision.template(), null, 2) + '\n');
-  process.exit(0);
-}
-
-if (!args.file) {
-  say(`
-  Provisioning (agency machine only)
-
-    --template              print a spec file to fill in
-    --file client.json      the filled-in spec
-    --dry-run               validate and show the changes, write nothing
-    --keep-demo-accounts    leave the seeded logins alone (you almost never want this)
-    --no-activate           mint the licence but do not install it on this machine
-
-  Typical run:
-
-    npm run provision -- --template > client.json
-    npm run provision -- --file client.json --dry-run
-    npm run provision -- --file client.json
-`);
-  process.exit(0);
-}
-
-/* ----------------------------------------------------------------- read ---- */
-
-const specPath = path.resolve(String(args.file));
-if (!fs.existsSync(specPath)) die(`No such file: ${specPath}`);
-
-let spec;
-try {
-  spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
-} catch (err) {
-  die(`${path.basename(specPath)} will not parse as JSON: ${err.message}`);
-}
-
-const { loadConfig } = require('../src/config');
-const current = provision.readConfig();
-
-/* ------------------------------------------------------------- validate ---- */
-
-head('Checking the spec');
-
-const check = provision.validate(spec, { config: current });
-check.errors.forEach(bad);
-check.warnings.forEach(warn);
-
-if (!check.ok) {
-  say(`\n  ${C.red}Nothing was changed.${C.off} Fix the above and run again.\n`);
-  process.exit(1);
-}
-if (!check.warnings.length) good('Everything checks out');
-
-// The licence is signed from this machine, so a missing key stops us before we edit
-// a config the client would then be running without a licence.
-const wantsLicence = !!(spec.licence && spec.licence.plan);
-if (wantsLicence && !minting.hasPrivateKey()) {
-  die('No licence signing key on this machine. Run: node scripts/issue-license.js --keygen');
-}
-
-/* ----------------------------------------------------------- what changes ---- */
-
-const nextConfig = provision.planConfig(spec, current);
-const changes = provision.diff(current, nextConfig);
-
-head(`Config — ${changes.length} change${changes.length === 1 ? '' : 's'}`);
-if (!changes.length) {
-  note('nothing to change; the config already matches the spec');
-} else {
-  const width = Math.max(...changes.map((c) => c.key.length));
-  changes.forEach((c) => {
-    const from = c.from === undefined || c.from === '' ? '(empty)' : String(c.from);
-    say(`    ${c.key.padEnd(width)}  ${C.dim}${truncate(from)}${C.off} → ${truncate(String(c.to))}`);
-  });
-}
-
-function truncate(s, n = 46) {
-  return s.length > n ? s.slice(0, n - 1) + '…' : s;
-}
-
-/* ------------------------------------------------------------- dry run ---- */
-
-const auth = require('../src/auth');
-const existingOwner = auth.findByEmail(spec.owner.email);
-
-head('Accounts');
-if (existingOwner) {
-  note(`${spec.owner.email} already exists — its password will be reset`);
-} else {
-  note(`${spec.owner.email} will be created as owner, with a generated password`);
-}
-
-const demoAccounts = auth.users().filter((u) => /@store\.com$/i.test(u.email));
-if (demoAccounts.length) {
-  if (args['keep-demo-accounts']) {
-    warn(`${demoAccounts.length} seeded account(s) will be LEFT ACTIVE: ${demoAccounts.map((u) => u.email).join(', ')}`);
-  } else {
-    note(`${demoAccounts.length} seeded account(s) will be removed: ${demoAccounts.map((u) => u.email).join(', ')}`);
-  }
-}
-
-if (args['dry-run']) {
-  say(`\n  ${C.dim}Dry run — nothing was written.${C.off}\n`);
-  process.exit(0);
-}
-
-/* ---------------------------------------------------------------- write ---- */
-
-head('Writing');
-
-// Back up first, and say where: the one thing you need when a run was pointed at the
-// wrong store.
-const backup = provision.backupConfig();
-fs.writeFileSync(provision.CONFIG_PATH, JSON.stringify(nextConfig, null, 2) + '\n', 'utf8');
-require('../src/config').invalidate();
-good(`config/site.config.json  (backup: ${backup})`);
-
-/* --- the owner account --- */
-const password = provision.generatePassword();
-if (existingOwner) {
-  auth.updateUser(existingOwner.id, { role: 'owner', active: true, password });
-  good(`${spec.owner.email} — password reset, role owner`);
-} else {
-  auth.createUser({ name: spec.owner.name, email: spec.owner.email, password, role: 'owner' });
-  good(`${spec.owner.email} — created as owner`);
-}
-
-/* --- the seeded logins. Leaving these is how a handover password stays valid. --- */
-if (demoAccounts.length && !args['keep-demo-accounts']) {
-  demoAccounts.forEach((u) => auth.removeUser(u.id));
-  good(`removed ${demoAccounts.length} seeded account(s)`);
-}
-
-/* --- the catalogue --- */
-if (spec.catalogue === 'empty') {
-  const productsWrite = require('../src/products');
-  const count = productsWrite.readRaw().length;
-  productsWrite.writeRaw([]);
-  good(`emptied the demo catalogue (${count} products removed)`);
-}
-
-/* --- the licence --- */
-let licence = null;
-if (wantsLicence) {
-  try {
-    licence = minting.mint({
-      store: spec.brand.name,
-      plan: spec.licence.plan,
-      months: spec.licence.months || 12,
-      extras: spec.licence.extras || [],
-      domains: spec.licence.domains || []
-    });
-    minting.record({ ...licence.payload, reference: licence.reference, token: licence.token });
-    good(`licence ${licence.reference} — ${spec.licence.plan}, ${licence.months} months`);
-
-    /* Install it here too. We host these stores, so a key that is only printed leaves
-       the shop we just provisioned running unlicensed while the paperwork says
-       otherwise. --no-activate is for the other case: preparing a key for a server
-       somebody else runs. */
-    if (args['no-activate']) {
-      note('not activated on this install (--no-activate) — paste it wherever the shop actually runs');
-    } else {
-      const applied = require('../src/license').activate(licence.token);
-      if (applied.ok) {
-        good('licence activated on this install');
-      } else {
-        warn(`licence minted but not activated here: ${applied.reason}`);
-      }
+    const plain = (v) => v === null || typeof v !== 'object';
+    if (plain(a) && plain(b)) {
+      if (a !== b) lines.push({ key: label, from: a, to: b });
+      return;
     }
-  } catch (err) {
-    // The config is already theirs at this point, so this is a warning rather than a
-    // failure: the store works, it just needs a key pasting in.
-    warn(`licence not issued: ${err.message}`);
-  }
+    if (Array.isArray(a) || Array.isArray(b)) {
+      const sa = JSON.stringify(a);
+      const sb = JSON.stringify(b);
+      if (sa !== sb) lines.push({ key: label, from: sa, to: sb });
+      return;
+    }
+    lines.push(...diff(a || {}, b || {}, label));
+  });
+
+  return lines;
 }
 
-/* ------------------------------------------------------------ handover ---- */
-
-say(`\n  ${C.bold}Hand these over${C.off}\n`);
-say(`    Admin        /admin`);
-say(`    Email        ${spec.owner.email}`);
-say(`    Password     ${C.bold}${password}${C.off}`);
-note('shown once and never stored in readable form — send it, then have them change it');
-
-if (licence) {
-  say(`\n    Licence key  ${C.dim}(paste into Admin → Licence, or set LICENSE_KEY)${C.off}\n`);
-  say(`    ${licence.token}\n`);
-  const domains = licence.payload.domains;
-  note(domains.length ? `locked to ${domains.join(', ')}` : 'NOT domain-locked — it will work on any host');
-}
-
-/* ------------------------------------------------------ what is still left ---- */
-
-head('Still needed before launch');
-
-const config = loadConfig();
-const products = require('../src/catalog').all();
-const notifications = require('../src/notifications');
-const payments = require('../src/payments');
-
-const left = [];
-
-const placeholders = products.filter((p) => !p.images || !p.images.length || p.images.every((i) => i.includes('ph.svg')));
-if (!products.length) {
-  left.push('Their catalogue — nothing is listed yet. Admin → Bulk upload.');
-} else if (placeholders.length) {
-  left.push(`Real photography — ${placeholders.length} of ${products.length} products still use placeholder art.`);
-}
-
-if (notifications.status(config).provider === 'log') {
-  left.push('Mail credentials — order confirmations print to the console until a provider is connected.');
-}
-if (!payments.status(config).live) {
-  left.push('Payment gateway keys — the shop takes manual and COD orders until these are in.');
-}
-if (minting.hasPrivateKey()) {
-  left.push('If this machine is the CLIENT\'S server, delete .license-keys/ — it can mint licences for every store.');
-}
-
-if (!left.length) {
-  good('Nothing — run npm run doctor to confirm');
-} else {
-  left.forEach((l) => warn(l));
-  note('these are the client\'s to supply; everything else is done');
-}
-
-say(`\n  ${C.dim}Confirm with:  npm run doctor${C.off}\n`);
+module.exports = {
+  CONFIG_PATH, CATALOGUE_CHOICES,
+  template, looksLikeDemo, validate, generatePassword, readConfig, backupConfig, planConfig, pickFulfilment, diff
+};
