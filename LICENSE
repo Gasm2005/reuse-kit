@@ -1,0 +1,43 @@
+Copyright (c) 2026 Ajay Pratap Pandey. All rights reserved.
+
+PROPRIETARY — NOT OPEN SOURCE
+
+This repository is a private library of the author's own work, harvested from
+projects the author built. It is not published under an open-source licence, and
+nothing here grants any permission to third parties.
+
+No permission is granted to any person or organisation to copy, use, modify,
+merge, publish, distribute, sublicense, or sell any part of this repository, or
+any derivative of it, without the author's prior written permission.
+
+WHY THIS IS DELIBERATE
+
+Some of this code is commercial product. The ethnic-luxe stack in particular
+ships Ed25519-signed licence keys, plan gating and per-tenant provisioning
+specifically so the same codebase can be sold many times without losing control
+of it. An open-source licence here would grant everyone the permission that
+machinery exists to withhold — including the right to resell it.
+
+If a specific module is ever worth releasing publicly (a standalone GSTIN
+validator, say), release that file on its own terms. Do not relicense the
+repository to do it.
+
+CLIENT WORK
+
+Shipping code from this repository into a project delivered to a client does not
+require relicensing this repository, but it is a decision worth making
+deliberately each time: grant the client a licence to USE the delivered work,
+rather than transferring ownership of the underlying modules. Otherwise the same
+module cannot be reused for the next client.
+
+THIRD-PARTY DEPENDENCIES
+
+This repository contains no vendored third-party code. Packages referenced in
+the manifest (express, ejs, sharp, react, @supabase/supabase-js, and others)
+remain under their own licences and are not covered by this notice.
+
+NO WARRANTY
+
+The code is provided as-is, without warranty of any kind. It was written for
+specific projects and carries their assumptions; read the notes in each asset's
+README before relying on it.

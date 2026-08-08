@@ -31,10 +31,10 @@
       "label": "Node + Express + EJS + htmx, JSON file store (no database)",
       "deployedOn": "Any Node host (render.yaml + pm2 ecosystem included)",
       "sourceProjects": [
-        "ethnic-luxe-template"
+        "ethnic-luxe-template (author-owned)"
       ],
       "caveat": "Server-rendered EJS with htmx fragments — there is no React here. Views are not portable to a React stack, but the backend modules are plain CommonJS with almost no framework coupling and lift cleanly into any Node app. The JSON store is SINGLE-PROCESS ONLY: under pm2 cluster mode two workers write from stale copies and silently lose orders (server.js refuses to boot in that case).",
-      "licence": "The source repo carries NO LICENSE file. Fine for your own reference; before shipping any of it to a paying client, confirm you own or are licensed for this code."
+      "licence": "Author-owned (built by the author with Claude). Covered by the repository LICENSE: proprietary, all rights reserved. NOT open source — this stack is commercial product and ships its own licence-key machinery to control resale."
     }
   ],
   "assets": [
@@ -2445,5 +2445,10 @@
   ],
   "adminPanel": {
     "note": "Admin panels live in admin-panel/<stack>/ rather than under stacks/, because an admin panel is lifted as a whole unit — shell, auth guard and CRUD screens together — not asset by asset."
+  },
+  "licence": {
+    "file": "LICENSE",
+    "type": "proprietary — all rights reserved",
+    "note": "Author-owned work. No open-source grant. See LICENSE for why that is deliberate."
   }
 }

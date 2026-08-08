@@ -42,7 +42,11 @@ ${manifest.purpose}
 
 > **Generated file — do not edit by hand.** Edit \`assets.json\`, then run \`node scripts/build-index.mjs\`.
 
-**${manifest.assets.length} assets** · updated ${manifest.updated}
+**${manifest.assets.length} assets** · updated ${manifest.updated} · [${
+  manifest.licence?.type ?? "see LICENSE"
+}](LICENSE)
+
+${manifest.licence?.note ? `> ⚖️ ${manifest.licence.note}` : ""}
 
 ## How to use this repo
 

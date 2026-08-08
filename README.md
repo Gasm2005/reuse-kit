@@ -4,7 +4,9 @@ Reusable assets harvested from shipped websites, organised by tech stack, then f
 
 > **Generated file — do not edit by hand.** Edit `assets.json`, then run `node scripts/build-index.mjs`.
 
-**67 assets** · updated 2026-08-08
+**67 assets** · updated 2026-08-08 · [proprietary — all rights reserved](LICENSE)
+
+> ⚖️ Author-owned work. No open-source grant. See LICENSE for why that is deliberate.
 
 ## How to use this repo
 
@@ -101,10 +103,10 @@ node -e "const a=require('./assets.json').assets; console.log(a.filter(x=>x.tags
 
 ---
 # Node + Express + EJS + htmx, JSON file store (no database)
-`stacks/express-ejs-htmx/` · Any Node host (render.yaml + pm2 ecosystem included) · from ethnic-luxe-template · 30 assets
+`stacks/express-ejs-htmx/` · Any Node host (render.yaml + pm2 ecosystem included) · from ethnic-luxe-template (author-owned) · 30 assets
 > ⚠️ **Portability:** Server-rendered EJS with htmx fragments — there is no React here. Views are not portable to a React stack, but the backend modules are plain CommonJS with almost no framework coupling and lift cleanly into any Node app. The JSON store is SINGLE-PROCESS ONLY: under pm2 cluster mode two workers write from stale copies and silently lose orders (server.js refuses to boot in that case).
 >
-> ⚖️ **Licence:** The source repo carries NO LICENSE file. Fine for your own reference; before shipping any of it to a paying client, confirm you own or are licensed for this code.
+> ⚖️ **Licence:** Author-owned (built by the author with Claude). Covered by the repository LICENSE: proprietary, all rights reserved. NOT open source — this stack is commercial product and ships its own licence-key machinery to control resale.
 
 ### Admin panel
 

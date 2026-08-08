@@ -9,12 +9,16 @@ A resellable D2C storefront + admin, built to be sold many times: licence keys, 
 per-client provisioning, and a theme contract. 11,200 lines of backend across 47 modules, ~100 EJS
 views, and an admin panel that is more complete than most SaaS dashboards.
 
-## ⚖️ Licence — read this before shipping any of it
+## ⚖️ Ownership
 
-**The source repo has no LICENSE file.** That means no permission is granted in writing to copy,
-modify or redistribute it. For a private reference library this is a practical non-issue; before any
-of this goes into work you deliver to a paying client, confirm you own the code or are licensed for
-it. This kit records where every file came from precisely so that question stays answerable.
+**Author-owned.** This template was built by the author (with Claude), so there is no third-party
+copyright question. The upstream repo simply had no LICENSE file, which is why an earlier version of
+this note flagged it — that flag was wrong and has been removed.
+
+The repository `LICENSE` covers it: **proprietary, all rights reserved.** That is deliberate rather
+than lazy — this stack ships Ed25519-signed licence keys and plan gating precisely so it can be sold
+many times without losing control of it, and an open-source licence would hand away the permission
+that machinery exists to withhold.
 
 ## 🔒 Deliberately NOT copied — sensitive
 
