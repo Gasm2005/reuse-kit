@@ -1412,7 +1412,8 @@
       "files": [
         "store.js",
         "zip.js",
-        "backup.js"
+        "backup.js",
+        "seed-demo.js"
       ],
       "framework": "commonjs",
       "runtime": "server",
@@ -1707,13 +1708,15 @@
         "config.js",
         "settings.js",
         "CONTRACT.md",
-        "theme-check.js"
+        "theme-check.js",
+        "theme-example-raja/",
+        "theme-selftest/"
       ],
       "framework": "commonjs",
       "runtime": "server",
       "deps": [],
       "tested": false,
-      "reuse": "adapt",
+      "reuse": "as-is",
       "tags": [
         "theme",
         "theming",
@@ -1723,13 +1726,14 @@
         "contract",
         "validation"
       ],
-      "summary": "A documented contract for what a theme may override, plus a checker that validates a theme against it — so reskinning for a new client is a theme folder, not a fork.",
-      "adapt": "Read CONTRACT.md first; it is the design doc for the whole white-label approach.",
+      "summary": "A documented contract for what a theme may override, a checker that validates a theme against it, plus a WORKING theme override (theme-example-raja) that overrides home, header, filters, product-card and product-media — so reskinning for a new client is a theme folder, not a fork. theme-selftest holds fixtures the checker runs against, including a deliberately misspelled file to prove the checker catches typos.",
+      "adapt": "Read CONTRACT.md first — it is the design doc for the whole white-label approach. Then copy theme-example-raja as the starting shape for a new client theme.",
       "preview": {
         "live": null,
         "note": "CLI: npm run theme:check"
       },
-      "stack": "express-ejs-htmx"
+      "stack": "express-ejs-htmx",
+      "whyItMatters": "This is what makes one codebase resellable without forking: the base app stays untouched and each client gets a folder."
     },
     {
       "id": "htmx-header-escaping",
@@ -1809,7 +1813,8 @@
         "doctor.js",
         "ecosystem.config.js",
         "render.yaml",
-        "DEPLOY.md"
+        "DEPLOY.md",
+        "package.json"
       ],
       "framework": "commonjs",
       "runtime": "server",

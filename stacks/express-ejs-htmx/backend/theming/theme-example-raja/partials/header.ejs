@@ -1,0 +1,399 @@
+<%
+  /* Raja's header: the BASE header, with a marquee offer strip, an always-open search
+     field and a call button. Nothing else.
+
+     An earlier version rebuilt this from scratch — dense rows, sans-serif logo, no
+     letter-spacing — and it read as a utility page rather than a shop. The base header is
+     considered: it has rhythm, and it carries the drawer, the mega menu, the section
+     switcher and the install entry. Starting from it and adding three things is both a
+     better-looking header and a much smaller thing to maintain.
+
+     The three additions, and why:
+
+     The offer strip scrolls. It is the one place a value shop says what is on today, and
+     a line that sits still gets read once and then stops being seen.
+
+     The search field is open rather than behind a lens. A bridal shopper browses; this one
+     arrives knowing they want "jeans 34", and the lens costs them a click for nothing.
+
+     The phone number is a button. In this trade a rate is a conversation, and the number
+     being visible is the difference between a call and a closed tab. */
+%>
+<% const wishCount = wishlistIds.length; %>
+<%
+  /* Type scale, one notch up across the whole shop.
+
+     The base is set for a couture house: 10 and 11px letter-spaced caps, which reads as
+     restraint on a bridal page and as tiny on a 1600px desktop selling shirts. This
+     shopper is scanning prices and sizes, often at arm's length on a shop counter's
+     screen, and nothing here benefits from being delicate.
+
+     Done as a scale override rather than by editing the three overridden files, because
+     the listing, the bag and the checkout are the base's and would otherwise stay small —
+     a shop whose homepage is legible and whose checkout is not reads as broken. Each step
+     goes up roughly 15%, keeping the base's relative hierarchy intact.
+
+     Arbitrary-value classes need their brackets escaped in a CSS selector — .text-\[11px\]
+     and not .text-[11px], which matches nothing at all and fails silently.
+     !important because Tailwind's own utility has identical specificity. */
+%>
+<style id="raja-type-scale">
+  /* One notch, not two. A 20px body was tried and read as oversized rather than
+     comfortable — the cards lost their proportion and the nav started to crowd. About
+     15% up is the step that makes the shop legible at a counter without making it look
+     like an accessibility mode. */
+  .text-\[8px\]    { font-size: 9.5px  !important; }
+  .text-\[9px\]    { font-size: 10.5px !important; }
+  .text-\[9\.5px\]  { font-size: 11px   !important; }
+  .text-\[10px\]   { font-size: 11.5px !important; }
+  .text-\[10\.5px\] { font-size: 12px   !important; }
+  .text-\[11px\]   { font-size: 12.5px !important; }
+  .text-\[11\.5px\] { font-size: 13px   !important; }
+  .text-\[12px\]   { font-size: 13.5px !important; }
+  .text-\[12\.5px\] { font-size: 14px   !important; }
+  .text-\[13px\]   { font-size: 14.5px !important; }
+  .text-\[13\.5px\] { font-size: 15px   !important; }
+  .text-\[14\.5px\] { font-size: 16px   !important; }
+  .text-\[15px\]   { font-size: 16.5px !important; }
+  .text-\[16px\]   { font-size: 18px   !important; }
+  .text-\[17px\]   { font-size: 19px   !important; }
+
+  /* Tailwind's named steps, used for body copy and headings. */
+  .text-xs   { font-size: 0.83rem !important; }
+  .text-sm   { font-size: 0.96rem !important; }
+  .text-base { font-size: 1.08rem !important; }
+
+  /* Letter-spacing that suited 10px caps crowds 12.5px ones. */
+  .tracking-luxe { letter-spacing: 0.16em !important; }
+
+  /* --- the product page, first screenful --- */
+
+  @media (min-width: 1024px) {
+    /* 60/40, stated in fr rather than per cent.
+
+       The base is 7-and-5 of twelve, which is 58/42 — close, but 60/40 was asked for and
+       the gallery is the thing being sized, so it is stated rather than approximated.
+
+       Two arithmetic mistakes on the way here, both visible rather than subtle. Setting two
+       columns while the children still carried lg:col-span-7 and lg:col-span-5 made each
+       child span past the end of the grid, so the gallery filled the row and the buy panel
+       dropped below it. Then 60% + 40% plus the grid's gap came to more than the row, and
+       the second column ran off the right edge. fr divides what is left after the gap;
+       minmax(0, …) lets a long product name shrink its column instead of widening it. */
+    #product-layout {
+      /* 40 image · 10 air · 50 detail, adding to exactly 100. Stated in per cent with the
+         gap counted as one of the three parts, rather than in fr with the gap added on
+         top — that is the arithmetic that put a horizontal scrollbar on this page once
+         already. */
+      grid-template-columns: 40% 50% !important;
+      column-gap: 10% !important;
+      padding-top: 2.5rem !important;
+    }
+    /* And air inside the right column, so the price, the pincode box, the colours and the
+       sizes read as separate decisions instead of one dense block. */
+    #product-info > * + * { margin-top: 1.6rem; }
+    #product-layout > :first-child { grid-column: 1 / 2 !important; }
+    #product-info { grid-column: 2 / 3 !important; }
+
+    /* The IMAGE is what stays put, and the detail column scrolls with the page.
+
+       This was the other way round first — a sticky buy panel with its own overflow-y —
+       and it was worse than doing nothing. A scroll container nested inside the page
+       scroll meant the wheel moved whichever one the pointer happened to be over, so
+       scrolling down took the size picker and Add to bag out of the panel while the image
+       sat still: neither the piece nor the way to buy it was usable at the same time.
+
+       Sticking the gallery instead is what every large shop does, and it works because
+       there is only one scroll: the photograph is always there, and the details, sizes and
+       Add to bag come up past it. */
+    #product-layout > :first-child {
+      position: sticky;
+      /* 1.25rem, not 7.5: the header scrolls away on this page, so there is nothing above
+         to clear and the photograph gets those six rems back. */
+      top: 1.25rem;
+      align-self: start;
+    }
+
+    /* The frame is now sized by SHAPE, not by viewport height.
+
+       A fixed 62vh was right when the gallery held 60% of the row. At 30% the column is
+       about 440px on a laptop, and 640px of height in 440px of width is a letterbox stood
+       on end — it flatters no garment. A 4:5 frame keeps the proportion a clothes
+       photograph wants at any column width, with a cap so it cannot outgrow the screen on
+       a large monitor. */
+    .raja-frame {
+      aspect-ratio: 4 / 5;
+      height: auto;
+      max-height: 76vh;
+    }
+
+    /* The thumbnail rail never grows past the frame. Same cap, so with many views the rail
+       scrolls instead of stretching the gallery below the photograph — a rail sticking out
+       under the image is the sort of thing that reads as unfinished. */
+    .raja-rail {
+      max-height: 76vh;
+      scrollbar-width: thin;
+    }
+  }
+</style>
+
+
+<%
+  const marquee = (config.brand.marquee && config.brand.marquee.length)
+    ? config.brand.marquee
+    : [config.brand.announcement].filter(Boolean);
+  const phone = String(config.brand.supportPhone || '').trim();
+  const phoneDigits = phone.replace(/\D/g, '');
+%>
+
+
+<%
+  /* Collapses as you scroll. The four rows — offers, logo and search, sections,
+     categories — come to about 200px, a quarter of a laptop viewport spent on chrome
+     before the page begins. Past 120px of scroll the offer strip and the section row fold
+     away and the rows tighten, leaving the logo, the search, the phone and the categories.
+
+     Nothing is removed, only hidden: the sections are still switchable from the drawer and
+     from the row when you scroll back up. Height is animated rather than display-toggled so
+     the page does not jump under the reader. */
+%>
+<%
+  /* On a product page the header scrolls away instead of sticking.
+
+     Everywhere else a sticky header earns its 135px: search, the phone number and the bag
+     are worth having within reach while somebody browses a long listing. On a product page
+     the job is to show one garment as large as it will go, and the header was taking a fifth
+     of the screen away from it — the shrink-on-scroll gave 90px back and it still was not
+     enough.
+
+     Scrolling away costs little here: the shopper arrived to look at one thing, and the
+     buy bar follows them down the page anyway once the real buttons leave. */
+  // startsWith rather than a regex: a slash-heavy pattern is one lost backslash away from
+  // being a syntax error, and this one already was.
+  const stickyHeader = !String(currentPath || '').startsWith('/product/');
+%>
+<div x-data="{
+       small: false,
+       measure() {
+         const y = window.scrollY;
+         if (!this.small && y > 160) this.small = true;
+         else if (this.small && y < 60) this.small = false;
+       }
+     }"
+     x-init="small = window.scrollY > 160"
+     @scroll.window.passive="measure()"
+     class="<%= stickyHeader ? 'sticky top-0 z-50' : 'relative z-50' %>">
+<% if (marquee.length) { %>
+  <!-- Two passes so the loop has no visible seam; the copy is aria-hidden so a screen
+       reader does not read every offer twice. -->
+  <div class="overflow-hidden bg-maroon text-ivory transition-all duration-200"
+       :class="small ? 'max-h-0' : 'max-h-10'">
+    <div class="flex w-max animate-[raja-marquee_30s_linear_infinite] gap-12 whitespace-nowrap py-2 pl-4 text-[10px] uppercase tracking-luxe sm:text-[11px]">
+      <% for (let pass = 0; pass < 2; pass++) { %>
+        <span class="flex gap-12" <%= pass ? 'aria-hidden="true"' : '' %>>
+          <% marquee.forEach(function (line) { %>
+            <span class="flex items-center gap-3"><span class="text-goldLight">&#9670;</span><%= line %></span>
+          <% }); %>
+        </span>
+      <% } %>
+    </div>
+  </div>
+  <style>
+    @keyframes raja-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    /* Someone who asked the OS to stop moving things meant it. A still strip still reads;
+       one they cannot stop is a reason to leave. */
+    @media (prefers-reduced-motion: reduce) {
+      .animate-[raja-marquee_30s_linear_infinite] { animation: none; }
+    }
+  </style>
+<% } %>
+
+<header class="border-b border-line bg-ivory/95 backdrop-blur supports-[backdrop-filter]:bg-ivory/80">
+  <div class="mx-auto max-w-[1600px] px-4 lg:px-8">
+
+    <!-- row 1 : logo · search · actions -->
+    <div class="flex items-center gap-3 transition-all duration-200 lg:gap-8"
+         :class="small ? 'py-1.5 lg:py-2' : 'py-3 lg:py-4'">
+
+      <button class="-ml-1 p-2 lg:hidden" @click="$store.ui.menu = true" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+
+      <a href="/" class="mx-auto shrink-0 text-center leading-none lg:mx-0 lg:text-left">
+        <% if (config.brand.logoImage) { %>
+          <img src="<%= config.brand.logoImage %>" alt="<%= config.brand.name %>" class="h-8 w-auto lg:h-10">
+        <% } else { %>
+          <span class="block font-serif text-xl tracking-[0.18em] text-ink lg:text-2xl"><%= config.brand.logoText %></span>
+          <% if (config.brand.logoSubtext) { %>
+            <span class="mt-0.5 block text-[8px] tracking-luxe text-gold lg:text-[9px]"><%= config.brand.logoSubtext %></span>
+          <% } %>
+        <% } %>
+      </a>
+
+
+      <!-- phone/tablet: orders only — bag, saved and search live in the bottom tab bar -->
+      <a href="/orders" class="-mr-1 p-2 text-ink lg:hidden" aria-label="Your orders">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.2-3.4 3.8-5 7-5s5.8 1.6 7 5"/></svg>
+      </a>
+
+      <!-- Open, not behind a lens: this shopper arrives knowing the size they want. -->
+      <div class="mx-4 hidden min-w-0 flex-1 lg:block">
+        <form action="/search" method="get" role="search" class="relative"
+              x-data="{ open: false }" @click.outside="open = false">
+          <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          </span>
+          <input type="search" name="q" value="" autocomplete="off" spellcheck="false"
+                 placeholder="Search shirts, sarees, jeans, size 34&hellip;"
+                 class="w-full border border-line bg-cream/50 py-2.5 pl-11 pr-4 text-sm text-ink placeholder:text-muted/80 focus:border-maroon focus:bg-ivory focus:outline-none"
+                 hx-get="/fragments/search-suggest"
+                 hx-trigger="keyup changed delay:300ms"
+                 hx-target="#suggest-raja"
+                 @focus="open = true" @input="open = true">
+          <div id="suggest-raja" x-show="open" x-cloak class="absolute inset-x-0 top-full z-50 pt-2"></div>
+        </form>
+      </div>
+
+      <nav class="ml-auto hidden items-center gap-1 lg:flex lg:gap-2">
+        <% if (phone) { %>
+          <a href="tel:<%= phoneDigits %>"
+             class="mr-1 hidden items-center gap-2 border border-line px-4 py-2 text-[11px] uppercase tracking-luxe text-ink transition hover:border-maroon hover:text-maroon lg:inline-flex">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="shrink-0"><path d="M4 4h4l2 5-2.5 1.5a12 12 0 0 0 6 6L15 14l5 2v4a16 16 0 0 1-16-16Z"/></svg>
+            <%= phone %>
+          </a>
+        <% } %>
+
+        <a href="/wishlist" class="relative rounded-btn p-2 text-ink transition hover:text-maroon" aria-label="Wishlist">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 20.5s-7.5-4.6-7.5-9.7A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 3.2c0 5.1-7.5 9.7-7.5 9.7Z"/></svg>
+          <span id="wish-count" class="<%= wishCount ? '' : 'hidden ' %>absolute -right-0.5 -top-0.5 min-w-[17px] rounded-full bg-gold px-1 text-center text-[10px] font-medium leading-[17px] text-ivory"><%= wishCount %></span>
+        </a>
+
+        <button @click="$store.ui.cart = true" class="relative rounded-btn p-2 text-ink transition hover:text-maroon" aria-label="Shopping bag">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 7h12l1 13H5L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+          <span id="cart-count" class="<%= cartSummary.count ? '' : 'hidden ' %>absolute -right-0.5 -top-0.5 min-w-[17px] rounded-full bg-maroon px-1 text-center text-[10px] font-medium leading-[17px] text-ivory"><%= cartSummary.count %></span>
+        </button>
+
+        <!-- Named for what it does. "Login" would promise an account this shop does not have. -->
+        <a href="/orders" class="ml-1 hidden items-center gap-2 border border-line px-4 py-2 text-[11px] uppercase tracking-luxe text-ink transition hover:border-maroon hover:text-maroon lg:inline-flex">
+          <%= me && me.orderIds && me.orderIds.length ? 'Your orders' : 'Track order' %>
+        </a>
+      </nav>
+    </div>
+
+    <!-- row 2 (phone/tablet) : full-width tap-to-search, opens the app search sheet -->
+    <div class="pb-3 lg:hidden">
+      <button type="button" @click="$store.ui.openAppSearch()"
+              class="flex w-full items-center gap-3 border border-line bg-cream/50 px-4 py-3 text-left text-sm text-muted">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="shrink-0"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span class="truncate"><%= (typeof filters !== 'undefined' && filters.q) ? filters.q : ((config.copy && config.copy.searchPlaceholder) || 'Search lehengas, sarees, occasions…') %></span>
+      </button>
+    </div>
+
+    <%
+      /* Section switcher — only when the shop actually has sections. A menswear-only
+         client sees nothing here, which is the point: one codebase, and the feature
+         is invisible to whoever didn't buy into it. */
+    %>
+    <% if (audiences.length > 1) { %>
+      <%
+        /* "Everything" is listed alongside the sections, not hidden behind a reset.
+           A shop selling menswear and womenswear has customers buying for the whole
+           family in one order, and making them flip sections between a sherwani and
+           a lehenga turns the chooser into a nuisance. */
+        const switcherOptions = audiences.concat([{ id: 'all', label: 'Everything' }]);
+      %>
+      <div class="hidden justify-center gap-1 border-t border-line/70 pt-2 lg:flex">
+        <% switcherOptions.forEach(function (a) { %>
+          <%
+            const isOn = a.id === 'all' ? !audienceId : audienceId === a.id;
+          %>
+          <form method="post" action="/audience">
+            <input type="hidden" name="audience" value="<%= a.id %>">
+            <!-- Back to the page they were reading, not to the homepage: switching
+                 section should not also lose their place. -->
+            <input type="hidden" name="next" value="<%= currentPath || '/' %>">
+            <button type="submit"
+                    class="px-3 py-1.5 text-[10px] uppercase tracking-luxe transition
+                           <%= isOn ? 'text-maroon' : 'text-muted hover:text-ink' %>">
+              <%= a.label %>
+              <% if (isOn) { %>
+                <span class="mt-1 block h-px bg-maroon"></span>
+              <% } %>
+            </button>
+          </form>
+        <% }); %>
+      </div>
+    <% } %>
+
+    <!-- row 3 : categories, with a small dropdown per item -->
+    <%
+      /* A compact dropdown under each category, not a full-width mega panel.
+
+         The base panel spans the viewport and drops a 250px-tall block containing a
+         featured image. That earns its space in a bridal shop where a category has three
+         columns of silhouettes to browse. Here every category has exactly one link — "All
+         Boys" — so the shopper's mouse had to travel most of the screen to reach it, and
+         the panel pushed the page down as it opened.
+
+         Anchored to the item instead: left-aligned under it, sized to its contents, and
+         with a little padding above so the pointer can cross the gap without the menu
+         closing under it. The featured image is dropped entirely — there is nothing to
+         feature when a category holds one link. */
+    %>
+    <nav class="hidden lg:block" @mouseleave="$store.ui.mega = null">
+      <ul class="flex items-center justify-center gap-9 border-t border-line/70">
+        <% nav.forEach(function (item) { %>
+          <li class="relative" @mouseenter="$store.ui.mega = '<%= item.slug %>'">
+            <a href="/category/<%= item.slug %>"
+               class="relative block py-3.5 text-[11px] uppercase tracking-luxe text-ink transition hover:text-maroon">
+              <%= item.label %>
+              <span class="absolute inset-x-0 -bottom-px h-px bg-maroon transition-transform duration-300"
+                    :class="$store.ui.mega === '<%= item.slug %>' ? 'scale-x-100' : 'scale-x-0'"></span>
+            </a>
+
+            <% if ((item.columns || []).some(function (c) { return (c.links || []).length; })) { %>
+              <div x-cloak x-show="$store.ui.mega === '<%= item.slug %>'"
+                   x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 -translate-y-1"
+                   x-transition:leave="transition ease-in duration-100" x-transition:leave-end="opacity-0"
+                   class="absolute left-0 top-full z-40 pt-1">
+                <!-- pt-1 above the card, inside the hover area: the gap the pointer
+                     crosses stays part of the menu, so it does not close mid-reach. -->
+                <%
+                  /* Grouped, since the groups are the point: a customer thinks "cotton or
+                     rayon" and "office or party", and flattening those into one list of
+                     eight makes them read the whole thing to find either.
+
+                     Two columns when there are two groups, one when there is one. Still
+                     sized to its contents and still anchored to the item — the reason this
+                     stopped being a full-width panel has not changed. */
+                  const groups = (item.columns || []).filter(function (c) { return (c.links || []).length; });
+                  const named = groups.filter(function (c) { return c.title; }).length > 0 && groups.length > 1;
+                %>
+                <div class="border border-line bg-ivory px-1 py-2.5 shadow-[0_18px_40px_-24px_rgba(23,19,15,.45)]">
+                  <div class="flex gap-1">
+                    <% groups.forEach(function (col, gi) { %>
+                      <div class="min-w-[10.5rem] <%= gi ? 'border-l border-line/70 pl-1' : '' %>">
+                        <% if (named) { %>
+                          <p class="px-3 pb-1.5 pt-0.5 text-[9.5px] uppercase tracking-luxe text-gold"><%= col.title %></p>
+                        <% } %>
+                        <% col.links.forEach(function (l) { %>
+                          <a href="<%= l.href %>"
+                             class="block whitespace-nowrap px-3 py-1.5 text-[13px] text-ink transition hover:bg-cream hover:text-maroon"><%= l.label %></a>
+                        <% }); %>
+                      </div>
+                    <% }); %>
+                  </div>
+                </div>
+              </div>
+            <% } %>
+          </li>
+        <% }); %>
+        <li><a href="/category/all?sort=new" class="py-3.5 text-[11px] uppercase tracking-luxe text-maroon">New In</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+</div>
+
+<%- include(view('partials/mobile-drawer')) %>

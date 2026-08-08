@@ -148,7 +148,7 @@ node -e "const a=require('./assets.json').assets; console.log(a.filter(x=>x.tags
 | [Commerce analytics, UTM attribution, audience switch](stacks/express-ejs-htmx/backend/analytics) | — | `analytics` | commonjs | 🟡 adapt | — | analytics, dashboard, kpi, revenue |
 | [Offline-verifiable licence keys + one-command provisioning](stacks/express-ejs-htmx/backend/licensing-saas) | — | `licensing-saas` | commonjs | 🟢 as-is | — | licensing, saas, ed25519, signing |
 | [Catalog import/export](stacks/express-ejs-htmx/backend/import-export) | — | `import-export` | commonjs | 🟡 adapt | — | import, export, csv, catalog |
-| [Theme contract + config-driven theming](stacks/express-ejs-htmx/backend/theming) | — | `theming` | commonjs | 🟡 adapt | — | theme, theming, white-label, config |
+| [Theme contract + config-driven theming](stacks/express-ejs-htmx/backend/theming) | — | `theming` | commonjs | 🟢 as-is | — | theme, theming, white-label, config |
 | [htmx response header helper](stacks/express-ejs-htmx/backend/htmx-helpers) | — | `htmx-helpers` | commonjs | 🟢 as-is | — | htmx, headers, hx-trigger, toast |
 | [Reviews (with media), Google review sync, marketing, journal](stacks/express-ejs-htmx/backend/reviews-and-marketing) | — | `reviews-and-marketing` | commonjs | 🟡 adapt | — | reviews, ugc, google-reviews, marketing |
 | [Server entry, health doctor, pm2 + Render deploy](stacks/express-ejs-htmx/backend/ops-and-deploy) | — | `ops-and-deploy` | commonjs | 🔵 reference | — | express, server, deploy, pm2 |

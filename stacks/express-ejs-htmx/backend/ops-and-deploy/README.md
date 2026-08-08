@@ -5,7 +5,7 @@
 ## Server entry, health doctor, pm2 + Render deploy
 🔵 reference · `commonjs` · runs: server
 **Preview:** CLI: npm run doctor
-**Files:** `server.js`, `doctor.js`, `ecosystem.config.js`, `render.yaml`, `DEPLOY.md`
+**Files:** `server.js`, `doctor.js`, `ecosystem.config.js`, `render.yaml`, `DEPLOY.md`, `package.json`
 
 **Depends on:** `express`, `ejs`, `cookie-parser`
 The Express entry (which refuses to boot under cluster mode because the JSON store cannot survive it), a doctor script that checks a deployment's config and dependencies before you find out from a customer, and working pm2 + Render deploy config.
